@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://qvxqg4ympsv0"]
+
+[ext_resource type="Script" uid="uid://bx8mi6f5vmlrn" path="res://scripts/core/GameManager.gd" id="1_bdmed"]
+[ext_resource type="PackedScene" uid="uid://cbxmlg03fyu8e" path="res://scenes/agents/Agent.tscn" id="2_0448q"]
+
+[node name="Battle" type="Node2D"]
+
+[node name="GameManager" type="Node" parent="."]
+script = ExtResource("1_bdmed")
+
+[node name="AgentsRoot" type="Node2D" parent="."]
+
+[node name="Agent" parent="AgentsRoot" instance=ExtResource("2_0448q")]
+position = Vector2(804, 263)
