@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://48306k40p4j4"]
+
+[ext_resource type="Script" uid="uid://ct0ftvdfsn8i2" path="res://scripts/team/Team.gd" id="1_2po70"]
+[ext_resource type="Script" uid="uid://cs2yedjetm3sk" path="res://scripts/comms/CommsManager.gd" id="2_k26v3"]
+
+[node name="Team" type="Node"]
+script = ExtResource("1_2po70")
+
+[node name="Comms" type="Node" parent="."]
+script = ExtResource("2_k26v3")

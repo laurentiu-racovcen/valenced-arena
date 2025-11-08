@@ -4,13 +4,13 @@ extends Node
 var context = null
 
 func setup(ctx) -> void:
-    context = ctx
+	context = ctx
 
 func update(delta: float) -> void:
-    pass
+	pass
 
 func on_agent_killed(agent, killer) -> void:
-    pass
+	pass
 
 func on_time_expired() -> void:
-    pass
+	pass

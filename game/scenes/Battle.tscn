@@ -1,7 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://qvxqg4ympsv0"]
+[gd_scene load_steps=5 format=3 uid="uid://qvxqg4ympsv0"]
 
 [ext_resource type="Script" uid="uid://bx8mi6f5vmlrn" path="res://scripts/core/GameManager.gd" id="1_bdmed"]
 [ext_resource type="PackedScene" uid="uid://cbxmlg03fyu8e" path="res://scenes/agents/Agent.tscn" id="2_0448q"]
+[ext_resource type="PackedScene" uid="uid://dxoskq82w5h82" path="res://scenes/GameMap.tscn" id="3_6grd4"]
+[ext_resource type="PackedScene" uid="uid://48306k40p4j4" path="res://scenes/Team.tscn" id="4_0y4rl"]
 
 [node name="Battle" type="Node2D"]
 
@@ -12,3 +14,13 @@ script = ExtResource("1_bdmed")
 
 [node name="Agent" parent="AgentsRoot" instance=ExtResource("2_0448q")]
 position = Vector2(804, 263)
+
+[node name="GameMap" parent="." instance=ExtResource("3_6grd4")]
+
+[node name="Teams" type="Node" parent="."]
+
+[node name="TeamA" parent="Teams" instance=ExtResource("4_0y4rl")]
+teamName = "Losers"
+
+[node name="TeamB" parent="Teams" instance=ExtResource("4_0y4rl")]
+teamName = "winners"
