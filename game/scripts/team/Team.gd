@@ -2,14 +2,20 @@ extends Node
 class_name Team
 
 @export var teamName: String = "Team"
+var id
 var members: Array[Agent] = []
 @onready var comms: CommsManager = $Comms
-var map: GameMap
 
 func add_member(agent: Agent) -> void:
 	members.append(agent)
 	agent.team = self
-	agent.map = map
+	id = get_team_id()
 	if agent.id == "":
 		agent.id = agent.name
-	comms.register_agent(agent.id, agent)
+
+func get_team_id() -> int:
+	if name.ends_with("A"):
+		return 0
+	elif name.ends_with("B"):
+		return 1
+	return 0

@@ -1,11 +1,11 @@
 {
   "default": {
-    "max_hp": 100,
-    "move_speed": 200,
-    "damage_per_shot": 10,
-    "fire_rate": 2.0,
-    "ammo_max": 30,
-    "reload_time": 2.0,
-    "los_range": 300
+	"max_hp": 100,
+	"move_speed": 200,
+	"damage_per_shot": 10,
+	"fire_rate": 2.0,
+	"ammo_max": 30,
+	"reload_time": 2.0,
+	"los_range": 300
   }
 }

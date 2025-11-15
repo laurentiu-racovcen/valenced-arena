@@ -4,7 +4,6 @@ class_name Agent
 enum Role { LEADER, ADVANCE, TANK, SUPPORT }
 
 @export var role: Role = Role.ADVANCE
-@export var team_id: int = 0
 
 @export var max_hp: int = 100
 @export var move_speed: float = 200.0
@@ -12,10 +11,16 @@ enum Role { LEADER, ADVANCE, TANK, SUPPORT }
 @export var fire_rate: float = 2.0
 @export var ammo_max: int = 30
 @export var reload_time: float = 2.0
-@export var los_range: float = 300.0
+@export var los_range: float = 500.0
+@onready var perception: AgentPerception = $AgentPerception
 
 var hp: int
 var ammo: int
+var id: String = ""
+var team
+var map: GameMap
+var fire_cooldown: float = 2.0
+
 signal died(agent, killer)
 
 func _ready():
@@ -31,9 +36,39 @@ func take_damage(amount: int, from_agent) -> void:
 		emit_signal("died", self, from_agent)
 		queue_free()
 
+func _try_shoot() -> void:
+	if not perception:
+		return
+	var enemies = perception.get_visible_enemies()
+	if enemies.is_empty():
+		return
+	var target = enemies[0]  # deocamdată luăm primul
+	fire_cooldown = 1.0 / fire_rate
+
+	var bullet_scene = preload("res://scenes/bullets/Bullet.tscn")
+	var bullet = bullet_scene.instantiate() as Bullet
+	get_tree().current_scene.add_child(bullet)
+
+	# direcția spre țintă
+	var dir = (target.global_position - global_position).normalized()
+	bullet.direction = dir
+	bullet.owner = self
+	bullet.damage = damage_per_shot
+
+	# îl spawnăm un pic în fața agentului, nu exact în el
+	var spawn_offset = dir * 50.0   # 20 de pixeli în față
+	bullet.global_position = global_position + spawn_offset
+
+	print(name, " trage spre ", target.name, " cu dir=", dir)
+
+
 func _physics_process(delta: float) -> void:
-	# se mișcă într-un cerc în jurul originii
+	# mișcare simplă de test
 	var t = Time.get_ticks_msec() / 1000.0
 	var dir = Vector2.RIGHT.rotated(t)
 	velocity = dir * move_speed
 	move_and_slide()
+
+	fire_cooldown -= delta
+	if fire_cooldown <= 0.0:
+		_try_shoot()

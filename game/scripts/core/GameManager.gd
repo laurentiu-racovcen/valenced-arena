@@ -3,38 +3,90 @@ extends Node
 enum GameModeType { SURVIVAL, KOTH, CTF, TRANSPORT }
 
 @export var mode_type: GameModeType = GameModeType.SURVIVAL
-var mode = null
+@export var agents_per_team: int = 4
+@export var agent_scene: PackedScene = preload("res://scenes/agents/Agent.tscn")
+var mode: GameModeBase = null
 var time_left: float = 120.0
 
 func _ready():
+	_spawn_agents()
+	_register_agents_to_teams()
 	_init_mode()
+	_connect_agent_signals()
 
 func _process(delta: float) -> void:
 	time_left -= delta
 	if time_left <= 0.0:
 		time_left = 0.0
-		if mode and "on_time_expired" in mode:
+		if mode and mode.has_method("on_time_expired"):
 			mode.on_time_expired()
-	if mode and "update" in mode:
+	if mode:
 		mode.update(delta)
 
 func _init_mode() -> void:
 	match mode_type:
 		GameModeType.SURVIVAL:
-			mode = load("res://scripts/modes/SurvivalMode.gd").new()
+			mode = SurvivalMode.new()
 		GameModeType.KOTH:
-			mode = load("res://scripts/modes/KothMode.gd").new()
+			mode = KothMode.new()
 		GameModeType.CTF:
-			mode = load("res://scripts/modes/CtfMode.gd").new()
+			mode = CtfMode.new()
 		GameModeType.TRANSPORT:
-			mode = load("res://scripts/modes/TransportMode.gd").new()
+			# deocamdată poți lăsa null
+			mode = null
+
 	if mode:
 		add_child(mode)
-		if "setup" in mode:
-			mode.setup(self)
+		mode.setup(self)
+
+func _spawn_agents() -> void:
+	var agents_root = $"../AgentsRoot"
+	var map = $"../GameMap"
+	# de exemplu: două echipe, TeamA și TeamB
+	var teams_node = $"../Teams"
+	var team_nodes = teams_node.get_children()
+	if team_nodes.size() < 2:
+		return
+
+	for team_index in range(2):
+		for i in range(agents_per_team):
+			var agent = agent_scene.instantiate() as Agent
+			agents_root.add_child(agent)
+			var base_x = -200 if team_index == 0 else 200
+			var base_y = -100 + i * 100
+			agent.global_position = Vector2(base_x, base_y)
+			agent.map = map
+
+
+func _register_agents_to_teams() -> void:
+	if not has_node("../Teams"):
+		return
+	var teams_node = $"../Teams"
+
+	var agents = get_all_agents()
+	if agents.is_empty():
+		return
+
+	var team_nodes = teams_node.get_children()
+
+	if team_nodes.size() < 2:
+		return
+	var half = agents.size() / 2
+	for i in range(agents.size()):
+		var agent = agents[i]
+		var team = team_nodes[0] if i < half else team_nodes[1]
+		team.add_member(agent)
+
+func _connect_agent_signals() -> void:
+	for a in get_all_agents():
+		if not a.is_connected("died", Callable(self, "_on_agent_died")):
+			a.connect("died", Callable(self, "_on_agent_died"))
+
+func _on_agent_died(agent, killer) -> void:
+	on_agent_killed(agent, killer)
 
 func on_agent_killed(agent, killer) -> void:
-	if mode and "on_agent_killed" in mode:
+	if mode and mode.has_method("on_agent_killed"):
 		mode.on_agent_killed(agent, killer)
 	if has_node("../StatsManager"):
 		$"../StatsManager".on_agent_killed(agent, killer)

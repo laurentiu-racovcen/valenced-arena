@@ -1,9 +1,9 @@
 {
   "Survival": {
-    "time_limit": 120
+	"time_limit": 120
   },
   "KOTH": {
-    "time_limit": 180,
-    "max_score": 100
+	"time_limit": 180,
+	"max_score": 100
   }
 }

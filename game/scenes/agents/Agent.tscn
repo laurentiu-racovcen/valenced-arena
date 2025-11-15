@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://cbxmlg03fyu8e"]
+[gd_scene load_steps=5 format=3 uid="uid://cbxmlg03fyu8e"]
 
 [ext_resource type="Texture2D" uid="uid://dea53ruvjv3vg" path="res://icon.svg" id="1_blbl1"]
 [ext_resource type="Script" uid="uid://b13wtyyuft7v7" path="res://scripts/agents/Agent.gd" id="1_y8vf7"]
+[ext_resource type="Script" uid="uid://475hn1oegpoi" path="res://scripts/agents/AgentPerception.gd" id="3_hdfbc"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_blbl1"]
 radius = 19.75
@@ -14,3 +15,6 @@ texture = ExtResource("1_blbl1")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_blbl1")
+
+[node name="AgentPerception" type="Node" parent="."]
+script = ExtResource("3_hdfbc")
