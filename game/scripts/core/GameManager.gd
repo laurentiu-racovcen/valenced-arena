@@ -32,7 +32,6 @@ func _init_mode() -> void:
 		GameModeType.CTF:
 			mode = CtfMode.new()
 		GameModeType.TRANSPORT:
-			# deocamdată poți lăsa null
 			mode = null
 
 	if mode:
@@ -42,11 +41,6 @@ func _init_mode() -> void:
 func _spawn_agents() -> void:
 	var agents_root = $"../AgentsRoot"
 	var map = $"../GameMap"
-	# de exemplu: două echipe, TeamA și TeamB
-	var teams_node = $"../Teams"
-	var team_nodes = teams_node.get_children()
-	if team_nodes.size() < 2:
-		return
 
 	for team_index in range(2):
 		for i in range(agents_per_team):
@@ -73,9 +67,8 @@ func _register_agents_to_teams() -> void:
 		return
 	var half = agents.size() / 2
 	for i in range(agents.size()):
-		var agent = agents[i]
 		var team = team_nodes[0] if i < half else team_nodes[1]
-		team.add_member(agent)
+		team.add_member(agents[i])
 
 func _connect_agent_signals() -> void:
 	for a in get_all_agents():

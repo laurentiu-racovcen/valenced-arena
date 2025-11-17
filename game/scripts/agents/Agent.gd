@@ -11,7 +11,7 @@ enum Role { LEADER, ADVANCE, TANK, SUPPORT }
 @export var fire_rate: float = 2.0
 @export var ammo_max: int = 30
 @export var reload_time: float = 2.0
-@export var los_range: float = 500.0
+@export var los_range: float = 1000.0
 @onready var perception: AgentPerception = $AgentPerception
 
 var hp: int
@@ -56,7 +56,7 @@ func _try_shoot() -> void:
 	bullet.damage = damage_per_shot
 
 	# îl spawnăm un pic în fața agentului, nu exact în el
-	var spawn_offset = dir * 50.0   # 20 de pixeli în față
+	var spawn_offset = dir * 100.0
 	bullet.global_position = global_position + spawn_offset
 
 	print(name, " trage spre ", target.name, " cu dir=", dir)
