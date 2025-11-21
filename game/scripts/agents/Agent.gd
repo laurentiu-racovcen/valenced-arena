@@ -12,8 +12,17 @@ var role_logic: Node = null
 @export var fire_rate: float = 2.0
 @export var ammo_max: int = 30
 @export var reload_time: float = 2.0
-@export var los_range: float = 1000.0
+@export var los_range: float = 3000.0
 @onready var perception: AgentPerception = $AgentPerception
+@onready var visual = $Visual
+
+@onready var gun_pivot = $GunPivot
+
+var move_dir: Vector2 = Vector2.ZERO
+var aim_dir: Vector2 = Vector2.ZERO
+@export var body_turn_speed: float = 6.0
+@export var gun_turn_speed: float = 10.0
+
 
 var hp: int
 var ammo: int
@@ -64,6 +73,7 @@ func _try_shoot() -> void:
 		return
 	var enemies = perception.get_visible_enemies()
 	if enemies.is_empty():
+		aim_dir = move_dir
 		return
 	var target = enemies[0]  # deocamdată luăm primul
 	fire_cooldown = 1.0 / fire_rate
@@ -78,19 +88,47 @@ func _try_shoot() -> void:
 	bullet.owner = self
 	bullet.damage = damage_per_shot
 
+	# rotim vizualul și arma spre poziția prezisă
+	aim_dir = dir
+	
+	
+	bullet.direction = dir
+	bullet.owner = self
+	bullet.damage = damage_per_shot
+
 	# îl spawnăm un pic în fața agentului, nu exact în el
-	var spawn_offset = dir * 100.0
-	bullet.global_position = global_position + spawn_offset
+	bullet.global_position = $GunPivot/GunSprite/Muzzle.global_position
 
 	print(name, " trage spre ", target.name, " cu dir=", dir)
+	
+func _update_poses(delta: float) -> void:
+	if aim_dir.length() <= 0.1:
+		return
+
+	# agentul tău e desenat cu fața în jos => compensăm cu -PI/2
+	var body_angle = aim_dir.angle()
+
+	# corpul se întoarce mai lent
+	visual.rotation = lerp_angle(visual.rotation, body_angle, body_turn_speed * delta)
+
+	# arma se întoarce direct spre direcția de tragere (fără offset)
+	var gun_angle = aim_dir.angle()
+	gun_pivot.rotation = lerp_angle(gun_pivot.rotation, gun_angle, gun_turn_speed * delta)
+
 
 
 func _physics_process(delta: float) -> void:
-	# mișcare simplă de test
-	var t = Time.get_ticks_msec() / 1000.0
-	var dir = Vector2.RIGHT.rotated(t)
-	velocity = dir * move_speed
-	move_and_slide()
+	# mișcare simplă de test (la tine e deja ceva gen cerc)
+	#var t = Time.get_ticks_msec() / 1000.0
+	#move_dir = Vector2.RIGHT.rotated(t)
+	#velocity = move_dir * move_speed
+	#move_and_slide()
+
+	# dacă nu avem țintă, uită-te în direcția de mișcare
+	if aim_dir.length() < 0.1 and move_dir.length() > 0.1:
+		aim_dir = move_dir
+
+	_update_poses(delta)
 
 	fire_cooldown -= delta
 	if fire_cooldown <= 0.0:
