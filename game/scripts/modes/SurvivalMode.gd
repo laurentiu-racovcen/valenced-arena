@@ -1,36 +1,35 @@
 extends GameModeBase
 class_name SurvivalMode
 
-var team_alive := {}
-
 func setup(ctx) -> void:
 	super(ctx)
-	team_alive = {}
-	for a in context.get_all_agents():
-		if not team_alive.has(a.team.id):
-			team_alive[a.team.id] = 0
-		team_alive[a.team.id] += 1
+	# No need to track anything manually
+	pass
 
 func update(delta: float) -> void:
-	# deocamdată nu facem nimic aici
 	pass
 
 func on_agent_killed(agent, killer) -> void:
-	if team_alive.has(agent.team.id):
-		team_alive[agent.team.id] -= 1
-		if team_alive[agent.team.id] <= 0:
-			# toate unitățile din echipa asta au murit → cealaltă echipă câștigă
-			var winning_team := -1
-			for t in team_alive.keys():
-				if t != agent.team.id:
-					winning_team = t
-			context.on_round_ended(winning_team)
+	# context == GameManager
+	context.call_deferred("check_win_condition_deferred")
 
 func on_time_expired() -> void:
-	var winner := -1
-	var best := -1
-	for t in team_alive.keys():
-		if team_alive[t] > best:
-			best = team_alive[t]
-			winner = t
+	var teamA_alive = context.get_team_members(0).size()
+	var teamB_alive = context.get_team_members(1).size()
+
+	var winner = -1
+	if teamA_alive > teamB_alive:
+		winner = 0
+	elif teamB_alive > teamA_alive:
+		winner = 1
+
 	context.on_round_ended(winner)
+
+func check_win_condition() -> void:
+	var teamA_alive = context.get_team_members(0).size()
+	var teamB_alive = context.get_team_members(1).size()
+
+	if teamA_alive == 0 and teamB_alive > 0:
+		context.on_round_ended(1)
+	elif teamB_alive == 0 and teamA_alive > 0:
+		context.on_round_ended(0)

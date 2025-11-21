@@ -2,6 +2,7 @@ extends CharacterBody2D
 class_name Agent
 
 enum Role { LEADER, ADVANCE, TANK, SUPPORT }
+var role_logic: Node = null
 
 @export var role: Role = Role.ADVANCE
 
@@ -26,15 +27,37 @@ signal died(agent, killer)
 func _ready():
 	hp = max_hp
 	ammo = ammo_max
+	_load_role_logic()
+
+func _load_role_logic():
+	var script_path := ""
+	match role:
+		Role.LEADER:
+			script_path = "res://scripts/agents/roles/Leader.gd"
+		Role.ADVANCE:
+			script_path = "res://scripts/agents/roles/Advance.gd"
+		Role.SUPPORT:
+			script_path = "res://scripts/agents/roles/Support.gd"
+		Role.TANK:
+			script_path = "res://scripts/agents/roles/Tank.gd"
+	if script_path != "":
+		var logic = load(script_path).new()
+		add_child(logic)
+		logic.agent = self
 
 func is_alive() -> bool:
 	return hp > 0
 
 func take_damage(amount: int, from_agent) -> void:
 	hp -= amount
+
 	if hp <= 0:
+		if team:
+			team.remove_member(self)
+
 		emit_signal("died", self, from_agent)
 		queue_free()
+
 
 func _try_shoot() -> void:
 	if not perception:
@@ -72,3 +95,29 @@ func _physics_process(delta: float) -> void:
 	fire_cooldown -= delta
 	if fire_cooldown <= 0.0:
 		_try_shoot()
+
+func set_role(new_role: Role):
+	role = new_role
+
+	var sprite := $Sprite2D
+
+	if team == null:
+		return
+
+	# TEAM A (id = 0)
+	if team.id == 0:
+		if role == Role.LEADER:
+			# Leader strong blue
+			sprite.modulate = Color(0.3, 0.5, 1.0)
+		else:
+			# Other roles light blue
+			sprite.modulate = Color(0.6, 0.75, 1.0)
+
+	# TEAM B (id = 1)
+	elif team.id == 1:
+		if role == Role.LEADER:
+			# Leader strong pink
+			sprite.modulate = Color(1.0, 0.3, 0.7)
+		else:
+			# Other roles light pink
+			sprite.modulate = Color(1.0, 0.6, 0.8)

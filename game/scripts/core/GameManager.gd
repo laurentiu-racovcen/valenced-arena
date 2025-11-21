@@ -94,3 +94,17 @@ func on_round_ended(winning_team: int) -> void:
 		$"../StatsManager".on_round_ended(winning_team)
 	if has_node("../UIRoot"):
 		$"../UIRoot".call_deferred("show_round_result", winning_team)
+		
+
+func check_win_condition_deferred():
+	await get_tree().process_frame   # ensures all agents fully die
+	if mode and mode.has_method("check_win_condition"):
+		mode.check_win_condition()
+
+func get_team_members(team_id: int) -> Array:
+	if not has_node("../Teams"):
+		return []
+	for t in $"../Teams".get_children():
+		if t.get_team_id() == team_id:
+			return t.members
+	return []
