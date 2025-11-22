@@ -5,6 +5,7 @@ class_name Bullet
 var direction: Vector2 = Vector2.ZERO
 var damage: int = 10
 
+
 var traveled_distance: float = 0.0
 @export var max_distance: float = 2000.0
 
@@ -31,3 +32,5 @@ func _on_Bullet_body_entered(body: Node) -> void:
 	if body is Agent:
 		body.take_damage(damage, owner)
 		queue_free()
+	
+	queue_free()

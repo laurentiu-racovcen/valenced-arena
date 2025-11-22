@@ -27,6 +27,7 @@ func get_visible_enemies() -> Array:
 		var dist = agent.global_position.distance_to(other.global_position)
 		if dist <= agent.los_range:
 			# aici poți folosi GameMap.has_line_of_sight dacă vrei
-			res.append(other)
+			if agent.map.has_line_of_sight(agent.global_position, other.global_position, [agent, other]):
+				res.append(other)
 
 	return res

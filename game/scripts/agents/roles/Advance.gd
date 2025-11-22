@@ -20,6 +20,7 @@ func _physics_process(delta: float) -> void:
 
 	# Move toward formation position
 	var dir = (formation_pos - agent.global_position).normalized()
+	agent.move_dir = dir
 	agent.velocity = dir * agent.move_speed
 	agent.move_and_slide()
 

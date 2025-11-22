@@ -17,6 +17,7 @@ func _physics_process(delta: float) -> void:
 
 	# Move aggressively toward follow position
 	var dir = (follow_pos - agent.global_position).normalized()
+	agent.move_dir = dir
 	agent.velocity = dir * agent.move_speed * 1.1   # slightly faster
 	agent.move_and_slide()
 
