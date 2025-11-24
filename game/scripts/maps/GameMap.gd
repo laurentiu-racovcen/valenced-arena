@@ -3,6 +3,8 @@ class_name GameMap
 
 @onready var obstacles: TileMap = %Obstacles
 
+var time_left: float
+
 func has_line_of_sight(a: Vector2, b: Vector2) -> bool:
 	var params := PhysicsRayQueryParameters2D.create(a, b)
 	params.collision_mask = obstacles.collision_layer
