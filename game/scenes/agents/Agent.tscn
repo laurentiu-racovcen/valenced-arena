@@ -1,20 +1,24 @@
-[gd_scene load_steps=5 format=3 uid="uid://cbxmlg03fyu8e"]
+[gd_scene load_steps=6 format=3 uid="uid://cbxmlg03fyu8e"]
 
-[ext_resource type="Texture2D" uid="uid://dea53ruvjv3vg" path="res://icon.svg" id="1_blbl1"]
-[ext_resource type="Script" uid="uid://b13wtyyuft7v7" path="res://scripts/agents/Agent.gd" id="1_y8vf7"]
-[ext_resource type="Script" uid="uid://475hn1oegpoi" path="res://scripts/agents/AgentPerception.gd" id="3_hdfbc"]
+[ext_resource type="Script" uid="uid://b13wtyyuft7v7" path="res://scripts/agents/Agent.gd" id="1_s8jdv"]
+[ext_resource type="Texture2D" uid="uid://dea53ruvjv3vg" path="res://icon.svg" id="2_de4kw"]
+[ext_resource type="Script" uid="uid://475hn1oegpoi" path="res://scripts/agents/AgentPerception.gd" id="3_6qx6r"]
+[ext_resource type="Script" uid="uid://kkj5a4j1pyvk" path="res://scripts/agents/AgentComms.gd" id="4_ae3cv"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_hdfbc"]
 size = Vector2(90, 110)
 
 [node name="Agent" type="CharacterBody2D"]
-script = ExtResource("1_y8vf7")
+script = ExtResource("1_s8jdv")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-texture = ExtResource("1_blbl1")
+texture = ExtResource("2_de4kw")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_hdfbc")
 
 [node name="AgentPerception" type="Node" parent="."]
-script = ExtResource("3_hdfbc")
+script = ExtResource("3_6qx6r")
+
+[node name="AgentComms" type="Node" parent="."]
+script = ExtResource("4_ae3cv")
