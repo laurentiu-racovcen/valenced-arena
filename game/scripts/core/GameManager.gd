@@ -1,14 +1,13 @@
 extends Node
 
-enum GameModeType { SURVIVAL, KOTH, CTF, TRANSPORT }
-
-@export var mode_type: GameModeType = GameModeType.SURVIVAL
+@export var mode_type: Enums.GameMode = MatchConfig.game_mode
 @export var agents_per_team: int = 4
 @export var agent_scene: PackedScene = preload("res://scenes/agents/Agent.tscn")
 var mode: GameModeBase = null
-var time_left: float = 120.0
+var time_left: float
 
 func _ready():
+	time_left = float(MatchConfig.round_time_seconds)
 	_spawn_agents()
 	_register_agents_to_teams()
 	_init_mode()
@@ -24,14 +23,15 @@ func _process(delta: float) -> void:
 		mode.update(delta)
 
 func _init_mode() -> void:
+	print("selected mode type=",mode_type)
 	match mode_type:
-		GameModeType.SURVIVAL:
+		Enums.GameMode.SURVIVAL:
 			mode = SurvivalMode.new()
-		GameModeType.KOTH:
+		Enums.GameMode.KOTH:
 			mode = KothMode.new()
-		GameModeType.CTF:
+		Enums.GameMode.CTF:
 			mode = CtfMode.new()
-		GameModeType.TRANSPORT:
+		Enums.GameMode.TRANSPORT:
 			mode = null
 
 	if mode:
