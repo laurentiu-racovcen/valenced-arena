@@ -11,6 +11,7 @@ var traveled_distance: float = 0.0
 
 func _ready() -> void:
 	# ca să fim siguri că se apelează _physics_process
+	
 	set_physics_process(true)
 
 func _physics_process(delta: float) -> void:

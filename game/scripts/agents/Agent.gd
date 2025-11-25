@@ -16,11 +16,10 @@ var role_logic: Node = null
 @onready var perception: AgentPerception = $AgentPerception
 @onready var visual = $Visual
 
-@onready var gun_pivot = $Visual/GunPivot
+@onready var gun_pivot = $GunPivot
 
 var move_dir: Vector2 = Vector2.ZERO
 var aim_dir: Vector2 = Vector2.ZERO
-var body_angle: float = 0
 @export var body_turn_speed: float = 6.0
 @export var gun_turn_speed: float = 10.0
 
@@ -93,7 +92,7 @@ func _try_shoot() -> void:
 	aim_dir = dir
 	
 
-	bullet.global_position = $Visual/GunPivot/GunSprite/Muzzle.global_position
+	bullet.global_position = $GunPivot/GunSprite/Muzzle.global_position
 
 	print(name, " trage spre ", target.name, " cu dir=", dir)
 	
@@ -102,10 +101,19 @@ func _update_poses(delta: float) -> void:
 		return
 
 	# agentul tău e desenat cu fața în jos => compensăm cu -PI/2
-	body_angle = aim_dir.angle()
+	var body_angle = aim_dir.angle()
 
 	# corpul se întoarce mai lent
-	visual.rotation = body_angle
+	visual.rotation = lerp_angle(
+	visual.rotation,
+	body_angle,
+	body_turn_speed * delta)
+	
+	gun_pivot.rotation = lerp_angle(
+		gun_pivot.rotation,
+		body_angle,
+		gun_turn_speed * delta
+	)
 
 
 
@@ -122,6 +130,10 @@ func _physics_process(delta: float) -> void:
 		aim_dir = move_dir.normalized()
 
 	_update_poses(delta)
+	
+	fire_cooldown -= delta
+	if fire_cooldown <= 0:
+		_try_shoot()
 
 
 func set_role(new_role: Role):

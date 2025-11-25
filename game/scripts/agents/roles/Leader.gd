@@ -26,6 +26,6 @@ func _physics_process(delta):
 	agent.move_and_slide()
 
 	# 3. Shooting
-	agent.fire_cooldown -= delta
-	if agent.fire_cooldown <= 0:
-		agent._try_shoot()
+	#agent.fire_cooldown -= delta
+	#if agent.fire_cooldown <= 0:
+		#agent._try_shoot()

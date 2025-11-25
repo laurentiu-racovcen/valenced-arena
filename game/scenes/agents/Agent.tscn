@@ -50,30 +50,30 @@ shape = SubResource("CircleShape2D_wrp4r")
 [node name="AgentPerception" type="Node" parent="."]
 script = ExtResource("3_hdfbc")
 
-[node name="Visual" type="Node2D" parent="."]
-
-[node name="GunPivot" type="Node2D" parent="Visual"]
+[node name="GunPivot" type="Node2D" parent="."]
 position = Vector2(-4.5474735e-13, 2.3841858e-07)
 rotation = 0.002590987
 
-[node name="ArmLeft" type="Sprite2D" parent="Visual/GunPivot"]
+[node name="ArmLeft" type="Sprite2D" parent="GunPivot"]
 position = Vector2(68.62501, 69.38739)
 rotation = -0.008967801
 scale = Vector2(1.0000004, 1.0000004)
 texture = SubResource("AtlasTexture_1idmr")
 
-[node name="ArmRight" type="Sprite2D" parent="Visual/GunPivot"]
+[node name="ArmRight" type="Sprite2D" parent="GunPivot"]
 position = Vector2(-70.46808, 59.634357)
 rotation = -0.02871022
 scale = Vector2(1.0000004, 1.0000004)
 texture = SubResource("AtlasTexture_05dm5")
 
-[node name="GunSprite" type="Sprite2D" parent="Visual/GunPivot"]
+[node name="GunSprite" type="Sprite2D" parent="GunPivot"]
 position = Vector2(1.5065724, 167.99324)
 texture = SubResource("AtlasTexture_iej1q")
 
-[node name="Muzzle" type="Node2D" parent="Visual/GunPivot/GunSprite"]
+[node name="Muzzle" type="Node2D" parent="GunPivot/GunSprite"]
 position = Vector2(-0.0046325326, 165.02249)
+
+[node name="Visual" type="Node2D" parent="."]
 
 [node name="BodyTop" type="Sprite2D" parent="Visual"]
 texture = SubResource("AtlasTexture_k65ak")

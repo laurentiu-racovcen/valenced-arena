@@ -28,9 +28,9 @@ func _physics_process(delta: float) -> void:
 	agent.velocity = dir * agent.move_speed
 	agent.move_and_slide()
 
-	agent.fire_cooldown -= delta
-	if agent.fire_cooldown <= 0:
-		agent._try_shoot()
+	#agent.fire_cooldown -= delta
+	#if agent.fire_cooldown <= 0:
+		#agent._try_shoot()
 
 func _get_tank():
 	for m in agent.team.members:
