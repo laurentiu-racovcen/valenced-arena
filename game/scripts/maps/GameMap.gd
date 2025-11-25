@@ -5,6 +5,8 @@ class_name GameMap
 
 const OBSTACLE_MASK := 1 << 1  # Layer 2, același pe care l-ai pus în TileSet
 
+var time_left: float
+
 func has_line_of_sight(a: Vector2, b: Vector2, exclude: Array = []) -> bool:
 	var params := PhysicsRayQueryParameters2D.create(a, b)
 	params.collision_mask = OBSTACLE_MASK      # lovim DOAR obstacolele

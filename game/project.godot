@@ -14,3 +14,7 @@ config/name="2valenced-arena"
 run/main_scene="uid://dwx5qixja4wvs"
 config/features=PackedStringArray("4.5", "Forward Plus")
 config/icon="res://assets/icon.svg"
+
+[autoload]
+
+MatchConfig="*res://scripts/core/MatchConfig.gd"

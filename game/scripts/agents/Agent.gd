@@ -12,7 +12,7 @@ var role_logic: Node = null
 @export var fire_rate: float = 2.0
 @export var ammo_max: int = 30
 @export var reload_time: float = 2.0
-@export var los_range: float = 1400.0
+@export var los_range: float = 1700.0
 @onready var perception: AgentPerception = $AgentPerception
 @onready var visual = $Visual
 
