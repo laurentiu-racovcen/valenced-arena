@@ -38,6 +38,14 @@ func _init_mode() -> void:
 		add_child(mode)
 		mode.setup(self)
 
+func get_spawn_position(team_index: int, index_in_team: int) -> Vector2:
+	var team_center_x = -750 if team_index == 0 else 750
+	var spacing = 160
+	# echipa este centrată pe verticală
+	var start_y = -(agents_per_team - 1) * spacing / 2
+	var y = start_y + index_in_team * spacing
+	return Vector2(team_center_x, y)
+
 func _spawn_agents() -> void:
 	var agents_root = $"../AgentsRoot"
 	var map = $"../GameMap"
@@ -46,9 +54,7 @@ func _spawn_agents() -> void:
 		for i in range(agents_per_team):
 			var agent = agent_scene.instantiate() as Agent
 			agents_root.add_child(agent)
-			var base_x = -200 if team_index == 0 else 200
-			var base_y = -100 + i * 100
-			agent.global_position = Vector2(base_x, base_y)
+			agent.global_position = get_spawn_position(team_index, i)
 			agent.map = map
 
 

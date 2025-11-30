@@ -20,10 +20,11 @@ func _physics_process(delta: float) -> void:
 
 	# Move toward formation position
 	var dir = (formation_pos - agent.global_position).normalized()
+	agent.move_dir = dir
 	agent.velocity = dir * agent.move_speed
 	agent.move_and_slide()
 
-	# Shooting (leader triggers direction)
-	agent.fire_cooldown -= delta
-	if agent.fire_cooldown <= 0:
-		agent._try_shoot()
+	## Shooting (leader triggers direction)
+	#agent.fire_cooldown -= delta
+	#if agent.fire_cooldown <= 0:
+		#agent._try_shoot()

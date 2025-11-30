@@ -1,11 +1,13 @@
 [gd_scene load_steps=4 format=3 uid="uid://cyaci81wedemt"]
 
 [ext_resource type="Script" uid="uid://b26v1geg6rasl" path="res://scripts/bullets/Bullet.gd" id="1_jtypa"]
-[ext_resource type="Texture2D" uid="uid://dea53ruvjv3vg" path="res://icon.svg" id="2_qswsy"]
+[ext_resource type="Texture2D" uid="uid://dea53ruvjv3vg" path="res://assets/icon.svg" id="2_qswsy"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_qswsy"]
 
 [node name="Bullet" type="Area2D"]
+collision_layer = 4
+collision_mask = 3
 script = ExtResource("1_jtypa")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
