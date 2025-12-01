@@ -18,3 +18,10 @@ config/icon="res://assets/icon.svg"
 [autoload]
 
 MatchConfig="*res://scripts/core/MatchConfig.gd"
+
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/size/mode=3
+window/stretch/mode="viewport"

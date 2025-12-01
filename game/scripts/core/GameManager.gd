@@ -39,7 +39,7 @@ func _init_mode() -> void:
 		mode.setup(self)
 
 func get_spawn_position(team_index: int, index_in_team: int) -> Vector2:
-	var team_center_x = -750 if team_index == 0 else 750
+	var team_center_x = -1000 if team_index == 0 else 1000
 	var spacing = 160
 	# echipa este centrată pe verticală
 	var start_y = -(agents_per_team - 1) * spacing / 2
