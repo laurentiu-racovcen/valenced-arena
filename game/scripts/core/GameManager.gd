@@ -81,7 +81,46 @@ func _spawn_agents_and_assign_teams() -> void:
 			var team := team_a if team_id == 0 else team_b
 			team.add_member(agent)
 
-			agent.global_position = get_spawn_position(team_id, i, map)
+			var spawn_pos := get_spawn_position(team_id, i, map)
+			agent.global_position = spawn_pos
+			agent.global_position = _find_free_spawn_pos(agent, agent.global_position)
+
+			
+func _find_free_spawn_pos(agent: CharacterBody2D, desired: Vector2, tries := 60, step := 28.0) -> Vector2:
+	var space := agent.get_world_2d().direct_space_state
+	# Alternatively: var space := get_viewport().get_world_2d().direct_space_state
+
+	var cs := agent.get_node_or_null("CollisionShape2D") as CollisionShape2D
+	if cs == null or cs.shape == null:
+		return desired
+
+	var params := PhysicsShapeQueryParameters2D.new()
+	params.shape = cs.shape
+	params.collision_mask = agent.collision_mask
+	params.collide_with_bodies = true
+	params.collide_with_areas = false
+	params.exclude = [agent.get_rid()]
+
+	# Start from the collision shape's actual world transform
+	params.transform = cs.global_transform
+
+	# Try desired first
+	params.transform.origin = desired
+	if space.intersect_shape(params, 1).is_empty():
+		return desired
+
+	# Then search nearby in expanding rings
+	for i in range(tries):
+		var ring := float(i / 8) + 1.0
+		var angle := float(i) * 0.61803398875 * TAU  # golden-angle spiral
+		var candidate := desired + Vector2(cos(angle), sin(angle)) * (ring * step)
+
+		params.transform.origin = candidate
+		if space.intersect_shape(params, 1).is_empty():
+			return candidate
+
+	return desired
+
 
 #func _spawn_agents() -> void:
 	#var agents_root = $"../AgentsRoot"
