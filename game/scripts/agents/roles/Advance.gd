@@ -1,30 +1,57 @@
 extends Node
 class_name Advance
-var agent: Agent
 
+var agent: Agent
 
 func _physics_process(delta: float) -> void:
 	if not agent or not agent.is_alive():
 		return
 
-	var leader = agent.team.get_leader()
-	if not leader:
-		return
+	var target_pos: Vector2
 
-	# Index determines formation position
-	var index = agent.team.members.find(agent)
+	# 1. Încercăm mai întâi să luptăm: vedem vreun inamic?
+	var enemies := agent.perception.get_visible_enemies()
 
-	# Spread them horizontally in front of the leader
-	var x_offset = (index - 3) * 120
-	var formation_pos = leader.global_position + Vector2(150, 0) + Vector2(x_offset, 0)
+	if enemies.size() > 0:
+		# cel mai apropiat inamic
+		enemies.sort_custom(
+			func(a, b):
+				return a.global_position.distance_to(agent.global_position) < b.global_position.distance_to(agent.global_position)
+		)
+		var enemy: Agent = enemies[0] as Agent
 
-	# Move toward formation position
-	var dir = (formation_pos - agent.global_position).normalized()
+		var to_enemy: Vector2 = enemy.global_position - agent.global_position
+		var dist := to_enemy.length()
+		var desired_dist := 50.0  # cât de aproape vrem să stăm
+
+		var dir_norm: Vector2 = to_enemy / max(dist, 0.001)
+
+		# ne oprim pe un cerc în jurul inamicului, nu intrăm în el
+		target_pos = enemy.global_position - dir_norm * desired_dist
+
+	else:
+		# 2. Nu vedem inamici → urmăm Leader-ul în formație
+		var leader = agent.team.get_leader()
+		if leader == null:
+			return
+
+		var index = agent.team.members.find(agent)
+
+		var fwd: Vector2 = agent.team.forward_dir
+		var right: Vector2 = Vector2(fwd.y, -fwd.x)  # perpendicular pe forward
+
+		# formație 4 oameni în fața leader-ului
+		var offset_index := float(index) - 1.5
+		target_pos = leader.global_position + fwd * 150.0 + right * offset_index * 120.0
+
+	# 3. Mișcare cu pathfinding
+	var dir: Vector2 = agent.get_path_dir(target_pos)
+	var sep: Vector2 = agent.get_separation_dir(60.0)  # 60 = distanța minimă dorită
+
+	if sep != Vector2.ZERO:
+		# combinăm direcția principală cu separarea
+		dir = (dir + sep * 0.8).normalized()
+
 	agent.move_dir = dir
 	agent.velocity = dir * agent.move_speed
 	agent.move_and_slide()
-
-	## Shooting (leader triggers direction)
-	#agent.fire_cooldown -= delta
-	#if agent.fire_cooldown <= 0:
-		#agent._try_shoot()

@@ -2,8 +2,6 @@ extends Node
 class_name Support
 
 var agent: Agent
-
-## Tracking pentru comportament
 var current_assist_target: Agent = null
 var assist_urgency: int = 0
 var last_assist_time: float = 0.0
@@ -16,51 +14,35 @@ func _physics_process(delta: float) -> void:
 		return
 
 	var target_pos: Vector2
-	var current_time = Time.get_ticks_msec() / 1000.0
-	
-	# === PRIORITY 1: Răspunde la ASSIST === #
-	if current_assist_target and current_assist_target.is_alive():
-		if current_time - last_assist_time > ASSIST_TIMEOUT:
-			print("[Support] %s timeout ASSIST pentru %s" % [agent.id, current_assist_target.id])
-			current_assist_target = null
-			assist_urgency = 0
-		else:
-			target_pos = current_assist_target.global_position
-			var distance_to_target = agent.global_position.distance_to(target_pos)
-			
-			if distance_to_target < ASSIST_DISTANCE:
-				print("[Support] %s ajunge la %s, atacă inamici!" % [agent.id, current_assist_target.id])
-				var dir = (target_pos - agent.global_position).normalized()
-				agent.velocity = dir * agent.move_speed * 0.3
-			else:
-				var dir = (target_pos - agent.global_position).normalized()
-				agent.velocity = dir * agent.move_speed * 1.2
-			
+	var current_time := Time.get_ticks_msec() / 1000.0
+
+	# 0. Dacă are inamic în față și trage în perete → mută-te!
+	var enemies := agent.perception.get_visible_enemies()
+	if enemies.size() > 0:
+		enemies.sort_custom(
+			func(a, b):
+				return a.global_position.distance_to(agent.global_position) < b.global_position.distance_to(agent.global_position)
+		)
+		var enemy: Agent = enemies[0] as Agent
+
+		var to_enemy: Vector2 = enemy.global_position - agent.global_position
+		var dist := to_enemy.length()
+		var desired_dist := 50.0
+
+		if (not agent.has_line_of_sight_to(enemy)) or dist > desired_dist:
+			var dir_norm = to_enemy / max(dist, 0.001)
+			target_pos = enemy.global_position - dir_norm * desired_dist
+
+			var dir: Vector2 = agent.get_path_dir(target_pos)
+			var sep: Vector2 = agent.get_separation_dir(60.0)  # 60 = distanța minimă dorită
+
+			if sep != Vector2.ZERO:
+				# combinăm direcția principală cu separarea
+				dir = (dir + sep * 0.8).normalized()
+
+			agent.move_dir = dir
+			agent.velocity = dir * agent.move_speed
 			agent.move_and_slide()
-			agent.fire_cooldown -= delta
-			if agent.fire_cooldown <= 0:
-				agent._try_shoot()
-			return
-	
-	# === PRIORITY 2: Follow Tank === #
-	var tank = _get_tank()
-	if tank:
-		target_pos = tank.global_position + Vector2(-200, 50)
-	else:
-		var leader = agent.team.get_leader() if agent.team else null
-		if leader:
-			target_pos = leader.global_position + Vector2(-150, 0)
-		else:
-			return
-
-	var dir = (target_pos - agent.global_position).normalized()
-	agent.move_dir = dir
-	agent.velocity = dir * agent.move_speed
-	agent.move_and_slide()
-
-	#agent.fire_cooldown -= delta
-	#if agent.fire_cooldown <= 0:
-		#agent._try_shoot()
 
 ## === CALLBACK PENTRU ASSIST === ##
 func on_assist_request(message: Message) -> void:

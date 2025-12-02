@@ -3,8 +3,12 @@ class_name Team
 
 @export var teamName: String = "Team"
 var id
+var forward_dir: Vector2 = Vector2.RIGHT
 var members: Array[Agent] = []
 @onready var comms: CommsManager = $Comms
+
+func _ready():
+	forward_dir = Vector2.RIGHT if id == 0 else Vector2.LEFT
 
 const ROLE_ORDER = [
 	Agent.Role.LEADER,

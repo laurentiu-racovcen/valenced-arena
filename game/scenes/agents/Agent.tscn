@@ -7,7 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://84j75f8jkwn2" path="res://assets/Weapons.png" id="5_wrp4r"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_wrp4r"]
-radius = 143.50348
+radius = 12.0
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_1idmr"]
 atlas = ExtResource("4_k65ak")
@@ -36,7 +36,7 @@ region = Rect2(268.4737, 129.64922, 165.44336, 164.94002)
 [node name="Agent" type="CharacterBody2D"]
 z_index = 1
 rotation = -1.5707964
-scale = Vector2(0.15, 0.15)
+scale = Vector2(0.1, 0.1)
 collision_mask = 3
 script = ExtResource("1_y8vf7")
 
@@ -85,3 +85,7 @@ texture = SubResource("AtlasTexture_wrp4r")
 
 [node name="Head" type="Sprite2D" parent="Visual"]
 texture = SubResource("AtlasTexture_hdfbc")
+
+[node name="Nav" type="NavigationAgent2D" parent="."]
+path_desired_distance = 5.0
+radius = 30.0

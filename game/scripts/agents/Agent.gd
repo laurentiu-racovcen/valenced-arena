@@ -17,6 +17,8 @@ var role_logic: Node = null
 @onready var visual = $Visual
 
 @onready var gun_pivot = $GunPivot
+@onready var nav: NavigationAgent2D = $Nav
+
 
 var move_dir: Vector2 = Vector2.ZERO
 var aim_dir: Vector2 = Vector2.ZERO
@@ -34,9 +36,36 @@ var fire_cooldown: float = 0.0
 signal died(agent, killer)
 
 func _ready():
+	add_to_group("agents")  # ca să îi putem găsi ușor pe toți
 	hp = max_hp
 	ammo = ammo_max
 	_load_role_logic()
+
+
+func get_separation_dir(min_dist: float = 50.0) -> Vector2:
+	var push: Vector2 = Vector2.ZERO
+
+	# ne uităm la TOȚI agenții din scenă
+	for node in get_tree().get_nodes_in_group("agents"):
+		var other := node as Agent
+		if other == null or other == self or not other.is_alive():
+			continue
+
+		var diff: Vector2 = global_position - other.global_position
+		var dist := diff.length()
+		if dist <= 0.01:
+			continue
+
+		if dist < min_dist:
+			# cu cât e mai aproape, cu atât împingem mai tare
+			var strength := (min_dist - dist) / min_dist
+			push += diff.normalized() * strength
+
+	if push.length() == 0.0:
+		return Vector2.ZERO
+
+	return push.normalized()
+
 
 func _load_role_logic():
 	# Șterge AI-ul vechi dacă există
@@ -92,31 +121,54 @@ func take_damage(amount: int, from_agent) -> void:
 func _try_shoot() -> void:
 	if not perception:
 		return
+
 	var enemies = perception.get_visible_enemies()
 	if enemies.is_empty():
+		# nu avem țintă, ne uităm în direcția de mers
 		aim_dir = move_dir
 		return
-	var target = enemies[0]
+
+	# căutăm cel mai apropiat inamic cu linie de tragere liberă
+	var best_target: Agent = null
+	var best_dist := INF
+
+	for e in enemies:
+		var enemy := e as Agent
+		if enemy == null:
+			continue
+
+		# NU tragem dacă avem perete între noi și el
+		if not has_line_of_sight_to(enemy):
+			continue
+
+		var d := enemy.global_position.distance_to(global_position)
+		if d < best_dist:
+			best_dist = d
+			best_target = enemy
+
+	# dacă niciun inamic nu are LOS liber → nu tragem
+	if best_target == null:
+		aim_dir = move_dir
+		return
+
+	# aici avem o țintă cu LOS liber -> tragem
 	fire_cooldown = 1.0 / fire_rate
 
 	var bullet_scene = preload("res://scenes/bullets/Bullet.tscn")
 	var bullet = bullet_scene.instantiate() as Bullet
-	
-	# Setează proprietățile ÎNAINTE de add_child
-	var dir = (target.global_position - global_position).normalized()
+
+	var dir: Vector2 = (best_target.global_position - global_position).normalized()
 	bullet.direction = dir
 	bullet.shooter = self
 	bullet.damage = damage_per_shot
 
-	# rotim vizualul și arma spre poziția prezisă
 	aim_dir = dir
-	
 
 	bullet.global_position = $GunPivot/GunSprite/Muzzle.global_position
-	
 	get_tree().current_scene.add_child(bullet)
 
-	print(name, " trage spre ", target.name, " cu dir=", dir)
+	print(name, " trage spre ", best_target.name, " cu dir=", dir)
+
 	
 func _update_poses(delta: float) -> void:
 	if aim_dir.length() <= 0.1:
@@ -222,3 +274,42 @@ func receive_message(message: Message) -> void:
 	# Delegare la AgentComms
 	if has_node("AgentComms"):
 		get_node("AgentComms").receive_message(message)
+	
+func get_path_dir(target_pos: Vector2) -> Vector2:
+	if nav == null:
+		return (target_pos - global_position).normalized()
+
+	nav.target_position = target_pos
+
+	if nav.is_navigation_finished():
+		return Vector2.ZERO
+
+	var next_point: Vector2 = nav.get_next_path_position()
+	var dir: Vector2 = next_point - global_position
+
+	if dir.length() < 1.0:
+		return Vector2.ZERO
+
+	return dir.normalized()
+
+	
+func has_line_of_sight_to(target: Agent) -> bool:
+	if target == null:
+		return false
+
+	var space := get_world_2d().direct_space_state
+	var from := global_position
+	var to := target.global_position
+
+	var params := PhysicsRayQueryParameters2D.create(from, to)
+	params.collision_mask = 1  # AICI trebuie să fie layer-ul PEREȚILOR, nu al agenților
+
+	var hit := space.intersect_ray(params)
+
+	if hit.is_empty():
+		return true
+
+	if hit.collider == target:
+		return true
+
+	return false
