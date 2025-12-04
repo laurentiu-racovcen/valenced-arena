@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://caoowftstejxn"
-path="res://.godot/imported/score_board.png-523c80cf183b3f586ad53786ac468edc.ctex"
+uid="uid://bfhk6h2i0t2yc"
+path="res://.godot/imported/los_m.png-1f3e79c278a2f2e87291a21fa0ce8e21.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/menu/match-finished/score_board.png"
-dest_files=["res://.godot/imported/score_board.png-523c80cf183b3f586ad53786ac468edc.ctex"]
+source_file="res://assets/menu/settings/section-agents/button_los/los_m.png"
+dest_files=["res://.godot/imported/los_m.png-1f3e79c278a2f2e87291a21fa0ce8e21.ctex"]
 
 [params]
 

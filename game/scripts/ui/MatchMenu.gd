@@ -160,7 +160,7 @@ func _on_num_rounds_changed(value: float) -> void:
 func _on_button_pressed(id: String) -> void:
 	match id:
 		"back":
-			get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")
+			get_tree().change_scene_to_file("res://scenes/MenuManager.tscn")
 		"start":
 			_on_start_game()
 

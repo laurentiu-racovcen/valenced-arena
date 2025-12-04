@@ -1,0 +1,279 @@
+[gd_scene load_steps=24 format=3 uid="uid://hwvtkrtxlkbg"]
+
+[ext_resource type="Script" uid="uid://ccvjhf3e6afnt" path="res://scripts/ui/menus/MenuManager.gd" id="1_6c8sk"]
+[ext_resource type="Texture2D" uid="uid://cajq3afc6wimj" path="res://assets/menu/bg.png" id="2_5p0sf"]
+[ext_resource type="Script" uid="uid://do87wra7gnn2d" path="res://scripts/ui/menus/Gamemode.gd" id="3_7t7qg"]
+[ext_resource type="Script" uid="uid://comrkffnh8thq" path="res://scripts/ui/menus/SettingsManager.gd" id="3_8fhjo"]
+[ext_resource type="Texture2D" uid="uid://b3vtpsctkqjqk" path="res://assets/menu/common/buttons/arrow_left.png" id="4_l3wcu"]
+[ext_resource type="Texture2D" uid="uid://d328jy68fqaqo" path="res://assets/menu/settings/sections-selector/button_select.png" id="5_dek3k"]
+[ext_resource type="Texture2D" uid="uid://ckh2xcx0r48ej" path="res://assets/menu/common/buttons/arrow_right.png" id="5_i7htd"]
+[ext_resource type="Texture2D" uid="uid://dnlb1kor0vjny" path="res://assets/menu/gamemode-select/button_start.png" id="6_dek3k"]
+[ext_resource type="Texture2D" uid="uid://crog4hcrp6gws" path="res://assets/menu/settings/sections-selector/button_rounds.png" id="6_l3wcu"]
+[ext_resource type="Texture2D" uid="uid://b0ybwgyo8c65c" path="res://assets/menu/gamemode-select/button_ctf.png" id="7_8fhjo"]
+[ext_resource type="Texture2D" uid="uid://dv7h0ko2ibflj" path="res://assets/menu/settings/sections-selector/button_agents.png" id="7_i7htd"]
+[ext_resource type="Texture2D" uid="uid://deqyasgk5suhc" path="res://assets/menu/gamemode-select/button_koth.png" id="8_760fv"]
+[ext_resource type="Texture2D" uid="uid://bgxa3dkn01xdn" path="res://assets/menu/settings/sections-selector/title_settings.png" id="9_5p0sf"]
+[ext_resource type="Texture2D" uid="uid://b5qjfr5ekg0cu" path="res://assets/menu/gamemode-select/button_survival.png" id="9_rehui"]
+[ext_resource type="Script" uid="uid://cvmmxtdprtxwb" path="res://scripts/ui/menus/SettingsSelect.gd" id="10_8fhjo"]
+[ext_resource type="Texture2D" uid="uid://cwpgbunxo04lx" path="res://assets/menu/gamemode-select/button_game_mode.png" id="10_yvxia"]
+[ext_resource type="Script" uid="uid://no4l8kxnnlyb" path="res://scripts/ui/menus/Main.gd" id="11_nxcfj"]
+[ext_resource type="Texture2D" uid="uid://uod35isfia7s" path="res://assets/menu/initial-menu/button_play.png" id="12_uwbky"]
+[ext_resource type="Texture2D" uid="uid://du0yiknkftus1" path="res://assets/menu/initial-menu/button_exit.png" id="13_r54wa"]
+[ext_resource type="Texture2D" uid="uid://bevusqf3tqlg" path="res://assets/menu/common/buttons/settings.png" id="14_uds2g"]
+[ext_resource type="Texture2D" uid="uid://bkwi4p4vlcg70" path="res://assets/menu/common/buttons/replay.png" id="15_jvsdq"]
+[ext_resource type="Texture2D" uid="uid://bhywueemp8g" path="res://assets/menu/initial-menu/title_valenced_arena.png" id="16_m74h7"]
+[ext_resource type="Texture2D" uid="uid://drwqdeywq1oxv" path="res://assets/menu/common/buttons/back.png" id="17_gut0v"]
+
+[node name="MenuManager" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+script = ExtResource("1_6c8sk")
+metadata/_edit_vertical_guides_ = [960.0]
+metadata/_edit_horizontal_guides_ = [540.0]
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_5p0sf")
+expand_mode = 3
+
+[node name="SettingsManager" type="Control" parent="."]
+anchors_preset = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+script = ExtResource("3_8fhjo")
+
+[node name="Selector" type="Control" parent="SettingsManager"]
+anchors_preset = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+script = ExtResource("10_8fhjo")
+
+[node name="LeftArrow" type="TextureButton" parent="SettingsManager/Selector"]
+layout_mode = 0
+offset_left = 525.00006
+offset_top = 498.0
+offset_right = 922.00006
+offset_bottom = 906.0
+scale = Vector2(0.313, 0.313)
+texture_normal = ExtResource("4_l3wcu")
+
+[node name="RightArrow" type="TextureButton" parent="SettingsManager/Selector"]
+layout_mode = 0
+offset_left = 1263.0001
+offset_top = 513.0
+offset_right = 1660.0001
+offset_bottom = 878.0
+scale = Vector2(0.313, 0.313)
+texture_normal = ExtResource("5_i7htd")
+
+[node name="SelectButton" type="TextureButton" parent="SettingsManager/Selector"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 762.0
+offset_top = 717.0
+offset_right = 1162.0
+offset_bottom = 940.0
+grow_horizontal = 2
+grow_vertical = 2
+texture_normal = ExtResource("5_dek3k")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="RoundSettings" type="TextureRect" parent="SettingsManager/Selector"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 695.0
+offset_top = 461.0
+offset_right = 1232.5
+offset_bottom = 678.5
+texture = ExtResource("6_l3wcu")
+expand_mode = 1
+
+[node name="AgentSettings" type="TextureRect" parent="SettingsManager/Selector"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 695.0
+offset_top = 461.0
+offset_right = 1232.5
+offset_bottom = 678.5
+texture = ExtResource("7_i7htd")
+expand_mode = 1
+
+[node name="Title" type="TextureRect" parent="SettingsManager/Selector"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 550.99994
+offset_top = 84.0
+offset_right = 1377.0
+offset_bottom = 365.0
+texture = ExtResource("9_5p0sf")
+expand_mode = 1
+
+[node name="Gamemode" type="Control" parent="."]
+visible = false
+anchors_preset = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+script = ExtResource("3_7t7qg")
+
+[node name="LeftArrow" type="TextureButton" parent="Gamemode"]
+layout_mode = 0
+offset_left = 525.00006
+offset_top = 498.0
+offset_right = 922.00006
+offset_bottom = 906.0
+scale = Vector2(0.313, 0.313)
+texture_normal = ExtResource("4_l3wcu")
+
+[node name="RightArrow" type="TextureButton" parent="Gamemode"]
+layout_mode = 0
+offset_left = 1263.0001
+offset_top = 513.0
+offset_right = 1660.0001
+offset_bottom = 878.0
+scale = Vector2(0.313, 0.313)
+texture_normal = ExtResource("5_i7htd")
+
+[node name="StartButton" type="TextureButton" parent="Gamemode"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 757.0
+offset_top = 724.0
+offset_right = 1163.0
+offset_bottom = 945.0
+grow_horizontal = 2
+grow_vertical = 2
+texture_normal = ExtResource("6_dek3k")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="CtfMode" type="TextureRect" parent="Gamemode"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 695.0
+offset_top = 461.0
+offset_right = 1232.5
+offset_bottom = 678.5
+texture = ExtResource("7_8fhjo")
+expand_mode = 1
+
+[node name="KothMode" type="TextureRect" parent="Gamemode"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 695.0
+offset_top = 461.0
+offset_right = 1232.5
+offset_bottom = 678.5
+texture = ExtResource("8_760fv")
+expand_mode = 1
+
+[node name="SurvivalMode" type="TextureRect" parent="Gamemode"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 695.0
+offset_top = 461.0
+offset_right = 1232.5
+offset_bottom = 678.5
+texture = ExtResource("9_rehui")
+expand_mode = 1
+
+[node name="Title" type="TextureRect" parent="Gamemode"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 550.99994
+offset_top = 84.0
+offset_right = 1377.0
+offset_bottom = 365.0
+texture = ExtResource("10_yvxia")
+expand_mode = 1
+
+[node name="Main" type="Control" parent="."]
+visible = false
+anchors_preset = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+script = ExtResource("11_nxcfj")
+
+[node name="PlayButton" type="TextureButton" parent="Main"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 712.5
+offset_top = 465.50012
+offset_right = 1207.5
+offset_bottom = 666.5002
+grow_horizontal = 2
+grow_vertical = 2
+texture_normal = ExtResource("12_uwbky")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="ExitButton" type="TextureButton" parent="Main"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 714.99994
+offset_top = 712.0
+offset_right = 1210.0
+offset_bottom = 913.0
+grow_horizontal = 2
+grow_vertical = 2
+texture_normal = ExtResource("13_r54wa")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="SettingsButton" type="TextureButton" parent="Main"]
+layout_mode = 0
+offset_left = 1340.0
+offset_top = 600.0
+offset_right = 1946.0001
+offset_bottom = 1196.0
+scale = Vector2(0.313, 0.313)
+texture_normal = ExtResource("14_uds2g")
+
+[node name="ReplayButton" type="TextureButton" parent="Main"]
+layout_mode = 0
+offset_left = 393.00003
+offset_top = 600.00006
+offset_right = 1068.0
+offset_bottom = 1196.0
+scale = Vector2(0.313, 0.313)
+texture_normal = ExtResource("15_jvsdq")
+
+[node name="Title" type="TextureRect" parent="Main"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 550.99994
+offset_top = 84.0
+offset_right = 1377.0
+offset_bottom = 365.0
+texture = ExtResource("16_m74h7")
+expand_mode = 1
+
+[node name="BackButton" type="TextureButton" parent="."]
+layout_mode = 0
+offset_left = 206.00002
+offset_top = 117.0
+offset_right = 649.0
+offset_bottom = 542.0
+scale = Vector2(0.313, 0.313)
+texture_normal = ExtResource("17_gut0v")
+
+[connection signal="pressed" from="SettingsManager/Selector/LeftArrow" to="SettingsManager/Selector" method="_on_left_arrow_pressed"]
+[connection signal="pressed" from="SettingsManager/Selector/RightArrow" to="SettingsManager/Selector" method="_on_right_arrow_pressed"]
+[connection signal="pressed" from="SettingsManager/Selector/SelectButton" to="SettingsManager/Selector" method="_on_select_button_pressed"]
+[connection signal="pressed" from="Gamemode/LeftArrow" to="Gamemode" method="_on_left_arrow_pressed"]
+[connection signal="pressed" from="Gamemode/RightArrow" to="Gamemode" method="_on_right_arrow_pressed"]
+[connection signal="pressed" from="Gamemode/StartButton" to="Gamemode" method="_on_start_button_pressed"]
+[connection signal="pressed" from="Main/PlayButton" to="Main" method="_on_play_button_pressed"]
+[connection signal="pressed" from="Main/ExitButton" to="Main" method="_on_exit_button_pressed"]
+[connection signal="pressed" from="Main/SettingsButton" to="Main" method="_on_settings_button_pressed"]
+[connection signal="pressed" from="BackButton" to="." method="_on_back_button_pressed"]
