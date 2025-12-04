@@ -5,7 +5,6 @@ class_name Bullet
 var direction: Vector2 = Vector2.ZERO
 var damage: int = 10
 
-
 var traveled_distance: float = 0.0
 @export var max_distance: float = 2000.0
 
