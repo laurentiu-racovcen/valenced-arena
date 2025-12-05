@@ -2,10 +2,12 @@ extends Control
 
 @onready var section_display: TextureRect = $SectionDisplay
 @onready var menu_manager : Node
-@onready var SECTION_TEXTURES = [
+
+const SECTION_TEXTURES = [
 	preload("res://assets/menu/normal/settings/sections-selector/button_rounds.png"),
 	preload("res://assets/menu/normal/settings/sections-selector/button_agents.png"),
 ]
+
 @onready var sections = [
 	"round_settings",
 	"agent_settings",

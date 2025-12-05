@@ -7,6 +7,7 @@ const MODE_TEXTURES := [
 	preload("res://assets/menu/normal/gamemode-select/button_koth.png"),
 	preload("res://assets/menu/normal/gamemode-select/button_ctf.png"),
 ]
+
 var current_mode_index: int = 0
 
 func _ready() -> void:

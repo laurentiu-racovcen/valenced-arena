@@ -1,6 +1,13 @@
 extends Control
 
 @onready var back_button = $BackButton
+@onready var settings_root: Control = $Settings
+const SETTINGS_IDS := [
+	"selector_settings",
+	"round_settings",
+	"agent_settings",
+]
+
 @onready var menus := {
 	"main": $Main,
 	"gamemode": $Gamemode,
@@ -19,6 +26,8 @@ func _ready() -> void:
 func _apply_menu_visibility() -> void:
 	for key in menus.keys():
 		menus[key].visible = (key == current_menu_id)
+	
+	settings_root.visible = SETTINGS_IDS.has(current_menu_id)
 
 func show_menu(id: StringName, push_current: bool = true) -> void:
 	if push_current and current_menu_id != "":

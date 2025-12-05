@@ -1,4 +1,4 @@
-[gd_scene load_steps=39 format=3 uid="uid://hwvtkrtxlkbg"]
+[gd_scene load_steps=41 format=3 uid="uid://hwvtkrtxlkbg"]
 
 [ext_resource type="Script" uid="uid://ccvjhf3e6afnt" path="res://scripts/ui/menus/MenuManager.gd" id="1_6c8sk"]
 [ext_resource type="Texture2D" uid="uid://cajq3afc6wimj" path="res://assets/menu/bg.png" id="2_5p0sf"]
@@ -31,13 +31,15 @@
 [ext_resource type="Texture2D" uid="uid://bkwi4p4vlcg70" path="res://assets/menu/normal/common/buttons/replay.png" id="15_jvsdq"]
 [ext_resource type="Texture2D" uid="uid://bhywueemp8g" path="res://assets/menu/normal/initial-menu/title_valenced_arena.png" id="16_m74h7"]
 [ext_resource type="Texture2D" uid="uid://drwqdeywq1oxv" path="res://assets/menu/normal/common/buttons/back.png" id="17_gut0v"]
-[ext_resource type="Texture2D" uid="uid://biu56ohlk16hi" path="res://assets/menu/hover/common/buttons/button_left.png" id="22_btpd2"]
-[ext_resource type="Texture2D" uid="uid://db5ayprwcqkjt" path="res://assets/menu/hover/common/buttons/button_right.png" id="23_ksyst"]
-[ext_resource type="Texture2D" uid="uid://brij525c5durc" path="res://assets/menu/hover/gamemode-select/button_start.png" id="25_27abv"]
+[ext_resource type="Texture2D" uid="uid://gyc0dmv5vvlj" path="res://assets/menu/hover/common/buttons/arrow_left.png" id="17_ksyst"]
+[ext_resource type="Texture2D" uid="uid://cmnyfms405iaq" path="res://assets/menu/hover/common/buttons/arrow_right.png" id="19_27abv"]
+[ext_resource type="Texture2D" uid="uid://cm7dm0hxasgsb" path="res://assets/menu/hover/settings/sections-selector/button_select.png" id="21_prgnb"]
+[ext_resource type="Texture2D" uid="uid://cclsqnh0kl21b" path="res://assets/menu/hover/gamemode-select/button_start.png" id="25_27abv"]
 [ext_resource type="Texture2D" uid="uid://db5nnud5y2lhv" path="res://assets/menu/hover/initial-menu/button_play.png" id="27_m74h7"]
 [ext_resource type="Texture2D" uid="uid://bi4u8030lnmbg" path="res://assets/menu/hover/initial-menu/button_exit.png" id="29_yqqfh"]
 [ext_resource type="Texture2D" uid="uid://hxgygcw3o5bd" path="res://assets/menu/hover/initial-menu/button_settings.png" id="31_22i10"]
 [ext_resource type="Texture2D" uid="uid://bvngkmxln8tty" path="res://assets/menu/hover/initial-menu/button_replay.png" id="33_gwo1h"]
+[ext_resource type="Texture2D" uid="uid://c8846fg3eqoex" path="res://assets/menu/hover/common/buttons/back.png" id="40_0d5s4"]
 
 [node name="MenuManager" type="Control"]
 layout_mode = 3
@@ -187,6 +189,7 @@ offset_right = 922.00006
 offset_bottom = 906.0
 scale = Vector2(0.313, 0.313)
 texture_normal = ExtResource("4_l3wcu")
+texture_hover = ExtResource("17_ksyst")
 
 [node name="RightArrow" type="TextureButton" parent="Settings/Selector"]
 layout_mode = 0
@@ -196,6 +199,7 @@ offset_right = 1660.0001
 offset_bottom = 878.0
 scale = Vector2(0.313, 0.313)
 texture_normal = ExtResource("5_i7htd")
+texture_hover = ExtResource("19_27abv")
 
 [node name="SelectButton" type="TextureButton" parent="Settings/Selector"]
 layout_mode = 1
@@ -207,6 +211,7 @@ offset_bottom = 940.0
 grow_horizontal = 2
 grow_vertical = 2
 texture_normal = ExtResource("5_dek3k")
+texture_hover = ExtResource("21_prgnb")
 ignore_texture_size = true
 stretch_mode = 0
 
@@ -245,7 +250,7 @@ offset_right = 922.00006
 offset_bottom = 906.0
 scale = Vector2(0.313, 0.313)
 texture_normal = ExtResource("4_l3wcu")
-texture_hover = ExtResource("22_btpd2")
+texture_hover = ExtResource("17_ksyst")
 
 [node name="RightArrow" type="TextureButton" parent="Gamemode"]
 layout_mode = 0
@@ -255,7 +260,7 @@ offset_right = 1660.0001
 offset_bottom = 878.0
 scale = Vector2(0.313, 0.313)
 texture_normal = ExtResource("5_i7htd")
-texture_hover = ExtResource("23_ksyst")
+texture_hover = ExtResource("19_27abv")
 
 [node name="StartButton" type="TextureButton" parent="Gamemode"]
 layout_mode = 1
@@ -363,6 +368,7 @@ offset_right = 649.0
 offset_bottom = 542.0
 scale = Vector2(0.313, 0.313)
 texture_normal = ExtResource("17_gut0v")
+texture_hover = ExtResource("40_0d5s4")
 
 [connection signal="pressed" from="Settings/Agent/Fov" to="Settings/Agent" method="_on_fov_pressed"]
 [connection signal="pressed" from="Settings/Agent/Los" to="Settings/Agent" method="_on_los_pressed"]
