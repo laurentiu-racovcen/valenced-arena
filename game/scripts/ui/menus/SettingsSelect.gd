@@ -1,30 +1,37 @@
 extends Control
 
+@onready var section_display: TextureRect = $SectionDisplay
+@onready var menu_manager : Node
+@onready var SECTION_TEXTURES = [
+	preload("res://assets/menu/normal/settings/sections-selector/button_rounds.png"),
+	preload("res://assets/menu/normal/settings/sections-selector/button_agents.png"),
+]
+@onready var sections = [
+	"round_settings",
+	"agent_settings",
+]
 
-@onready var sections = [$RoundSettings, $AgentSettings]
 var current_section_index: int = 0
 
 
 func _ready() -> void:
-	_apply_section_visibility()
+	menu_manager = get_tree().current_scene
+	_update_sections()
+	
 
 
-func _apply_section_visibility() -> void:
-	for i in sections.size():
-		sections[i].visible = (i == current_section_index)
 
 func _on_right_arrow_pressed() -> void:
-	current_section_index = (current_section_index + 1) % sections.size()
+	current_section_index = (current_section_index + 1) % SECTION_TEXTURES.size()
 	_update_sections()
 
 func _on_left_arrow_pressed() -> void:
-	current_section_index = (current_section_index - 1 + sections.size()) % sections.size()
+	current_section_index = (current_section_index - 1 + SECTION_TEXTURES.size()) % SECTION_TEXTURES.size()
 	_update_sections()
 
 func _update_sections() -> void:
-	for i in sections.size():
-		sections[i].visible = (i == current_section_index)
+	section_display.texture = SECTION_TEXTURES[current_section_index]
 
 
 func _on_select_button_pressed() -> void:
-	pass # Replace with function body.
+	menu_manager.show_menu(sections[current_section_index])

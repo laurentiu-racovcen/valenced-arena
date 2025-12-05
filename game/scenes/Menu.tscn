@@ -1,28 +1,43 @@
-[gd_scene load_steps=24 format=3 uid="uid://hwvtkrtxlkbg"]
+[gd_scene load_steps=39 format=3 uid="uid://hwvtkrtxlkbg"]
 
 [ext_resource type="Script" uid="uid://ccvjhf3e6afnt" path="res://scripts/ui/menus/MenuManager.gd" id="1_6c8sk"]
 [ext_resource type="Texture2D" uid="uid://cajq3afc6wimj" path="res://assets/menu/bg.png" id="2_5p0sf"]
 [ext_resource type="Script" uid="uid://do87wra7gnn2d" path="res://scripts/ui/menus/Gamemode.gd" id="3_7t7qg"]
 [ext_resource type="Script" uid="uid://comrkffnh8thq" path="res://scripts/ui/menus/SettingsManager.gd" id="3_8fhjo"]
-[ext_resource type="Texture2D" uid="uid://b3vtpsctkqjqk" path="res://assets/menu/common/buttons/arrow_left.png" id="4_l3wcu"]
-[ext_resource type="Texture2D" uid="uid://d328jy68fqaqo" path="res://assets/menu/settings/sections-selector/button_select.png" id="5_dek3k"]
-[ext_resource type="Texture2D" uid="uid://ckh2xcx0r48ej" path="res://assets/menu/common/buttons/arrow_right.png" id="5_i7htd"]
-[ext_resource type="Texture2D" uid="uid://dnlb1kor0vjny" path="res://assets/menu/gamemode-select/button_start.png" id="6_dek3k"]
-[ext_resource type="Texture2D" uid="uid://crog4hcrp6gws" path="res://assets/menu/settings/sections-selector/button_rounds.png" id="6_l3wcu"]
-[ext_resource type="Texture2D" uid="uid://b0ybwgyo8c65c" path="res://assets/menu/gamemode-select/button_ctf.png" id="7_8fhjo"]
-[ext_resource type="Texture2D" uid="uid://dv7h0ko2ibflj" path="res://assets/menu/settings/sections-selector/button_agents.png" id="7_i7htd"]
-[ext_resource type="Texture2D" uid="uid://deqyasgk5suhc" path="res://assets/menu/gamemode-select/button_koth.png" id="8_760fv"]
-[ext_resource type="Texture2D" uid="uid://bgxa3dkn01xdn" path="res://assets/menu/settings/sections-selector/title_settings.png" id="9_5p0sf"]
-[ext_resource type="Texture2D" uid="uid://b5qjfr5ekg0cu" path="res://assets/menu/gamemode-select/button_survival.png" id="9_rehui"]
+[ext_resource type="Texture2D" uid="uid://dph4a2ywakbec" path="res://assets/menu/normal/settings/section-rounds/duration_30s.png" id="4_760fv"]
+[ext_resource type="Script" uid="uid://h0ya0to5h10d" path="res://scripts/ui/menus/AgentSettings.gd" id="4_jvsdq"]
+[ext_resource type="Texture2D" uid="uid://b3vtpsctkqjqk" path="res://assets/menu/normal/common/buttons/arrow_left.png" id="4_l3wcu"]
+[ext_resource type="Texture2D" uid="uid://bw450bn2xge6w" path="res://assets/menu/normal/settings/section-agents/button_fov/45_deg.png" id="4_uwbky"]
+[ext_resource type="Texture2D" uid="uid://d328jy68fqaqo" path="res://assets/menu/normal/settings/sections-selector/button_select.png" id="5_dek3k"]
+[ext_resource type="Texture2D" uid="uid://ckh2xcx0r48ej" path="res://assets/menu/normal/common/buttons/arrow_right.png" id="5_i7htd"]
+[ext_resource type="Texture2D" uid="uid://bfhk6h2i0t2yc" path="res://assets/menu/normal/settings/section-agents/button_los/los_m.png" id="5_r54wa"]
+[ext_resource type="Texture2D" uid="uid://cuyye0n2so3a" path="res://assets/menu/normal/settings/section-rounds/nr_rounds_1.png" id="5_rehui"]
+[ext_resource type="Texture2D" uid="uid://dnlb1kor0vjny" path="res://assets/menu/normal/gamemode-select/button_start.png" id="6_dek3k"]
+[ext_resource type="Texture2D" uid="uid://crog4hcrp6gws" path="res://assets/menu/normal/settings/sections-selector/button_rounds.png" id="6_l3wcu"]
+[ext_resource type="Texture2D" uid="uid://bf1dxnug4rpvu" path="res://assets/menu/normal/settings/section-agents/button_speed/mid.png" id="6_uds2g"]
+[ext_resource type="Texture2D" uid="uid://bt2nrhb17gv66" path="res://assets/menu/normal/settings/section-rounds/number_of_rounds icon.png" id="7_yvxia"]
+[ext_resource type="Texture2D" uid="uid://c0vbjft8tol4l" path="res://assets/menu/normal/settings/section-rounds/button_round_duration.png" id="8_nxcfj"]
+[ext_resource type="Texture2D" uid="uid://bgxa3dkn01xdn" path="res://assets/menu/normal/settings/sections-selector/title_settings.png" id="9_5p0sf"]
+[ext_resource type="Texture2D" uid="uid://b5qjfr5ekg0cu" path="res://assets/menu/normal/gamemode-select/button_survival.png" id="9_rehui"]
+[ext_resource type="Texture2D" uid="uid://bqq6l8exihs7p" path="res://assets/menu/normal/settings/section-rounds/title_rounds.png" id="9_yvxia"]
 [ext_resource type="Script" uid="uid://cvmmxtdprtxwb" path="res://scripts/ui/menus/SettingsSelect.gd" id="10_8fhjo"]
-[ext_resource type="Texture2D" uid="uid://cwpgbunxo04lx" path="res://assets/menu/gamemode-select/button_game_mode.png" id="10_yvxia"]
+[ext_resource type="Texture2D" uid="uid://ce2mae62iwmg6" path="res://assets/menu/normal/settings/section-agents/title_agents.png" id="10_nxcfj"]
+[ext_resource type="Script" uid="uid://crxxv2wy6nudj" path="res://scripts/ui/menus/RoundSettings.gd" id="10_uwbky"]
+[ext_resource type="Texture2D" uid="uid://cwpgbunxo04lx" path="res://assets/menu/normal/gamemode-select/button_game_mode.png" id="10_yvxia"]
 [ext_resource type="Script" uid="uid://no4l8kxnnlyb" path="res://scripts/ui/menus/Main.gd" id="11_nxcfj"]
-[ext_resource type="Texture2D" uid="uid://uod35isfia7s" path="res://assets/menu/initial-menu/button_play.png" id="12_uwbky"]
-[ext_resource type="Texture2D" uid="uid://du0yiknkftus1" path="res://assets/menu/initial-menu/button_exit.png" id="13_r54wa"]
-[ext_resource type="Texture2D" uid="uid://bevusqf3tqlg" path="res://assets/menu/common/buttons/settings.png" id="14_uds2g"]
-[ext_resource type="Texture2D" uid="uid://bkwi4p4vlcg70" path="res://assets/menu/common/buttons/replay.png" id="15_jvsdq"]
-[ext_resource type="Texture2D" uid="uid://bhywueemp8g" path="res://assets/menu/initial-menu/title_valenced_arena.png" id="16_m74h7"]
-[ext_resource type="Texture2D" uid="uid://drwqdeywq1oxv" path="res://assets/menu/common/buttons/back.png" id="17_gut0v"]
+[ext_resource type="Texture2D" uid="uid://uod35isfia7s" path="res://assets/menu/normal/initial-menu/button_play.png" id="12_uwbky"]
+[ext_resource type="Texture2D" uid="uid://du0yiknkftus1" path="res://assets/menu/normal/initial-menu/button_exit.png" id="13_r54wa"]
+[ext_resource type="Texture2D" uid="uid://bevusqf3tqlg" path="res://assets/menu/normal/common/buttons/settings.png" id="14_uds2g"]
+[ext_resource type="Texture2D" uid="uid://bkwi4p4vlcg70" path="res://assets/menu/normal/common/buttons/replay.png" id="15_jvsdq"]
+[ext_resource type="Texture2D" uid="uid://bhywueemp8g" path="res://assets/menu/normal/initial-menu/title_valenced_arena.png" id="16_m74h7"]
+[ext_resource type="Texture2D" uid="uid://drwqdeywq1oxv" path="res://assets/menu/normal/common/buttons/back.png" id="17_gut0v"]
+[ext_resource type="Texture2D" uid="uid://biu56ohlk16hi" path="res://assets/menu/hover/common/buttons/button_left.png" id="22_btpd2"]
+[ext_resource type="Texture2D" uid="uid://db5ayprwcqkjt" path="res://assets/menu/hover/common/buttons/button_right.png" id="23_ksyst"]
+[ext_resource type="Texture2D" uid="uid://brij525c5durc" path="res://assets/menu/hover/gamemode-select/button_start.png" id="25_27abv"]
+[ext_resource type="Texture2D" uid="uid://db5nnud5y2lhv" path="res://assets/menu/hover/initial-menu/button_play.png" id="27_m74h7"]
+[ext_resource type="Texture2D" uid="uid://bi4u8030lnmbg" path="res://assets/menu/hover/initial-menu/button_exit.png" id="29_yqqfh"]
+[ext_resource type="Texture2D" uid="uid://hxgygcw3o5bd" path="res://assets/menu/hover/initial-menu/button_settings.png" id="31_22i10"]
+[ext_resource type="Texture2D" uid="uid://bvngkmxln8tty" path="res://assets/menu/hover/initial-menu/button_replay.png" id="33_gwo1h"]
 
 [node name="MenuManager" type="Control"]
 layout_mode = 3
@@ -46,19 +61,125 @@ grow_vertical = 2
 texture = ExtResource("2_5p0sf")
 expand_mode = 3
 
-[node name="SettingsManager" type="Control" parent="."]
+[node name="Settings" type="Control" parent="."]
+visible = false
 anchors_preset = 0
 offset_right = 1920.0
 offset_bottom = 1080.0
 script = ExtResource("3_8fhjo")
 
-[node name="Selector" type="Control" parent="SettingsManager"]
+[node name="Agent" type="Control" parent="Settings"]
+anchors_preset = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+script = ExtResource("4_jvsdq")
+
+[node name="Fov" type="TextureButton" parent="Settings/Agent"]
+layout_mode = 0
+offset_left = 423.0
+offset_top = 471.0
+offset_right = 887.0
+offset_bottom = 689.0
+texture_normal = ExtResource("4_uwbky")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="Los" type="TextureButton" parent="Settings/Agent"]
+layout_mode = 0
+offset_left = 1031.0
+offset_top = 474.0
+offset_right = 1495.0
+offset_bottom = 692.0
+texture_normal = ExtResource("5_r54wa")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="Speed" type="TextureButton" parent="Settings/Agent"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 690.0
+offset_top = 721.0
+offset_right = 1230.0
+offset_bottom = 939.0
+grow_horizontal = 2
+grow_vertical = 2
+texture_normal = ExtResource("6_uds2g")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="Title" type="TextureRect" parent="Settings/Agent"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 550.99994
+offset_top = 84.0
+offset_right = 1377.0
+offset_bottom = 365.0
+texture = ExtResource("10_nxcfj")
+expand_mode = 1
+
+[node name="Round" type="Control" parent="Settings"]
+anchors_preset = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+script = ExtResource("10_uwbky")
+
+[node name="Duration" type="TextureButton" parent="Settings/Round"]
+layout_mode = 0
+offset_left = 514.0
+offset_top = 483.0
+offset_right = 805.0
+offset_bottom = 686.0
+texture_normal = ExtResource("4_760fv")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="Number" type="TextureButton" parent="Settings/Round"]
+layout_mode = 0
+offset_left = 1161.0
+offset_top = 478.0
+offset_right = 1452.0
+offset_bottom = 681.0
+texture_normal = ExtResource("5_rehui")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="TimeIcon" type="TextureRect" parent="Settings/Round"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 341.0
+offset_top = 514.0
+offset_right = 499.0
+offset_bottom = 644.0
+texture = ExtResource("8_nxcfj")
+expand_mode = 1
+
+[node name="NrIcon" type="TextureRect" parent="Settings/Round"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 978.0
+offset_top = 501.0
+offset_right = 1142.0
+offset_bottom = 637.0
+texture = ExtResource("7_yvxia")
+expand_mode = 1
+
+[node name="Title" type="TextureRect" parent="Settings/Round"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 550.99994
+offset_top = 84.0
+offset_right = 1377.0
+offset_bottom = 365.0
+texture = ExtResource("9_yvxia")
+expand_mode = 1
+
+[node name="Selector" type="Control" parent="Settings"]
 anchors_preset = 0
 offset_right = 1920.0
 offset_bottom = 1080.0
 script = ExtResource("10_8fhjo")
 
-[node name="LeftArrow" type="TextureButton" parent="SettingsManager/Selector"]
+[node name="LeftArrow" type="TextureButton" parent="Settings/Selector"]
 layout_mode = 0
 offset_left = 525.00006
 offset_top = 498.0
@@ -67,7 +188,7 @@ offset_bottom = 906.0
 scale = Vector2(0.313, 0.313)
 texture_normal = ExtResource("4_l3wcu")
 
-[node name="RightArrow" type="TextureButton" parent="SettingsManager/Selector"]
+[node name="RightArrow" type="TextureButton" parent="Settings/Selector"]
 layout_mode = 0
 offset_left = 1263.0001
 offset_top = 513.0
@@ -76,7 +197,7 @@ offset_bottom = 878.0
 scale = Vector2(0.313, 0.313)
 texture_normal = ExtResource("5_i7htd")
 
-[node name="SelectButton" type="TextureButton" parent="SettingsManager/Selector"]
+[node name="SelectButton" type="TextureButton" parent="Settings/Selector"]
 layout_mode = 1
 anchors_preset = -1
 offset_left = 762.0
@@ -89,7 +210,7 @@ texture_normal = ExtResource("5_dek3k")
 ignore_texture_size = true
 stretch_mode = 0
 
-[node name="RoundSettings" type="TextureRect" parent="SettingsManager/Selector"]
+[node name="SectionDisplay" type="TextureRect" parent="Settings/Selector"]
 layout_mode = 1
 anchors_preset = -1
 offset_left = 695.0
@@ -99,17 +220,7 @@ offset_bottom = 678.5
 texture = ExtResource("6_l3wcu")
 expand_mode = 1
 
-[node name="AgentSettings" type="TextureRect" parent="SettingsManager/Selector"]
-layout_mode = 1
-anchors_preset = -1
-offset_left = 695.0
-offset_top = 461.0
-offset_right = 1232.5
-offset_bottom = 678.5
-texture = ExtResource("7_i7htd")
-expand_mode = 1
-
-[node name="Title" type="TextureRect" parent="SettingsManager/Selector"]
+[node name="Title" type="TextureRect" parent="Settings/Selector"]
 layout_mode = 1
 anchors_preset = -1
 offset_left = 550.99994
@@ -134,6 +245,7 @@ offset_right = 922.00006
 offset_bottom = 906.0
 scale = Vector2(0.313, 0.313)
 texture_normal = ExtResource("4_l3wcu")
+texture_hover = ExtResource("22_btpd2")
 
 [node name="RightArrow" type="TextureButton" parent="Gamemode"]
 layout_mode = 0
@@ -143,6 +255,7 @@ offset_right = 1660.0001
 offset_bottom = 878.0
 scale = Vector2(0.313, 0.313)
 texture_normal = ExtResource("5_i7htd")
+texture_hover = ExtResource("23_ksyst")
 
 [node name="StartButton" type="TextureButton" parent="Gamemode"]
 layout_mode = 1
@@ -154,30 +267,11 @@ offset_bottom = 945.0
 grow_horizontal = 2
 grow_vertical = 2
 texture_normal = ExtResource("6_dek3k")
+texture_hover = ExtResource("25_27abv")
 ignore_texture_size = true
 stretch_mode = 0
 
-[node name="CtfMode" type="TextureRect" parent="Gamemode"]
-layout_mode = 1
-anchors_preset = -1
-offset_left = 695.0
-offset_top = 461.0
-offset_right = 1232.5
-offset_bottom = 678.5
-texture = ExtResource("7_8fhjo")
-expand_mode = 1
-
-[node name="KothMode" type="TextureRect" parent="Gamemode"]
-layout_mode = 1
-anchors_preset = -1
-offset_left = 695.0
-offset_top = 461.0
-offset_right = 1232.5
-offset_bottom = 678.5
-texture = ExtResource("8_760fv")
-expand_mode = 1
-
-[node name="SurvivalMode" type="TextureRect" parent="Gamemode"]
+[node name="ModeDisplay" type="TextureRect" parent="Gamemode"]
 layout_mode = 1
 anchors_preset = -1
 offset_left = 695.0
@@ -198,7 +292,6 @@ texture = ExtResource("10_yvxia")
 expand_mode = 1
 
 [node name="Main" type="Control" parent="."]
-visible = false
 anchors_preset = 0
 offset_right = 1920.0
 offset_bottom = 1080.0
@@ -214,6 +307,7 @@ offset_bottom = 666.5002
 grow_horizontal = 2
 grow_vertical = 2
 texture_normal = ExtResource("12_uwbky")
+texture_hover = ExtResource("27_m74h7")
 ignore_texture_size = true
 stretch_mode = 0
 
@@ -227,6 +321,7 @@ offset_bottom = 913.0
 grow_horizontal = 2
 grow_vertical = 2
 texture_normal = ExtResource("13_r54wa")
+texture_hover = ExtResource("29_yqqfh")
 ignore_texture_size = true
 stretch_mode = 0
 
@@ -238,6 +333,7 @@ offset_right = 1946.0001
 offset_bottom = 1196.0
 scale = Vector2(0.313, 0.313)
 texture_normal = ExtResource("14_uds2g")
+texture_hover = ExtResource("31_22i10")
 
 [node name="ReplayButton" type="TextureButton" parent="Main"]
 layout_mode = 0
@@ -247,6 +343,7 @@ offset_right = 1068.0
 offset_bottom = 1196.0
 scale = Vector2(0.313, 0.313)
 texture_normal = ExtResource("15_jvsdq")
+texture_hover = ExtResource("33_gwo1h")
 
 [node name="Title" type="TextureRect" parent="Main"]
 layout_mode = 1
@@ -267,9 +364,14 @@ offset_bottom = 542.0
 scale = Vector2(0.313, 0.313)
 texture_normal = ExtResource("17_gut0v")
 
-[connection signal="pressed" from="SettingsManager/Selector/LeftArrow" to="SettingsManager/Selector" method="_on_left_arrow_pressed"]
-[connection signal="pressed" from="SettingsManager/Selector/RightArrow" to="SettingsManager/Selector" method="_on_right_arrow_pressed"]
-[connection signal="pressed" from="SettingsManager/Selector/SelectButton" to="SettingsManager/Selector" method="_on_select_button_pressed"]
+[connection signal="pressed" from="Settings/Agent/Fov" to="Settings/Agent" method="_on_fov_pressed"]
+[connection signal="pressed" from="Settings/Agent/Los" to="Settings/Agent" method="_on_los_pressed"]
+[connection signal="pressed" from="Settings/Agent/Speed" to="Settings/Agent" method="_on_speed_pressed"]
+[connection signal="pressed" from="Settings/Round/Duration" to="Settings/Round" method="_on_duration_pressed"]
+[connection signal="pressed" from="Settings/Round/Number" to="Settings/Round" method="_on_number_pressed"]
+[connection signal="pressed" from="Settings/Selector/LeftArrow" to="Settings/Selector" method="_on_left_arrow_pressed"]
+[connection signal="pressed" from="Settings/Selector/RightArrow" to="Settings/Selector" method="_on_right_arrow_pressed"]
+[connection signal="pressed" from="Settings/Selector/SelectButton" to="Settings/Selector" method="_on_select_button_pressed"]
 [connection signal="pressed" from="Gamemode/LeftArrow" to="Gamemode" method="_on_left_arrow_pressed"]
 [connection signal="pressed" from="Gamemode/RightArrow" to="Gamemode" method="_on_right_arrow_pressed"]
 [connection signal="pressed" from="Gamemode/StartButton" to="Gamemode" method="_on_start_button_pressed"]

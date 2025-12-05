@@ -14,4 +14,4 @@ func _on_exit_button_pressed() -> void:
 
 
 func _on_settings_button_pressed() -> void:
-	menu_manager.show_menu("settings")
+	menu_manager.show_menu("selector_settings")

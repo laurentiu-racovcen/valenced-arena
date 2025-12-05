@@ -4,7 +4,9 @@ extends Control
 @onready var menus := {
 	"main": $Main,
 	"gamemode": $Gamemode,
-	"settings": $SettingsManager/Selector
+	"selector_settings": $Settings/Selector,
+	"round_settings": $Settings/Round,
+	"agent_settings": $Settings/Agent,
 }
 
 var menu_stack: Array[StringName] = []
