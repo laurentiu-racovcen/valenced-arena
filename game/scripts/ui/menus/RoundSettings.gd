@@ -33,13 +33,14 @@ const  NUMBER_TEXTURES_HOVER = [
 	preload("res://assets/menu/hover/settings/section-rounds/nr_rounds_5.png"),	
 ]
 
-@onready var current_duration_index = 0
-@onready var current_number_index = 0
-
-
+var current_duration_index = 0
+var current_number_index = 0
 
 func _ready() -> void:
 	menu_manager = get_tree().current_scene
+	# Load from SettingsManager
+	current_duration_index = SettingsManager.get_rounds_duration_index()
+	current_number_index = SettingsManager.get_rounds_number_index()
 	_update_duration()
 	_update_number()
 	
@@ -57,9 +58,11 @@ func _update_number() -> void:
 
 func _on_duration_pressed() -> void:
 	current_duration_index = (current_duration_index + 1) % DURATION_TEXTURES_NORMAL.size()
+	SettingsManager.set_rounds_duration_index(current_duration_index)
 	_update_duration()
 
 
 func _on_number_pressed() -> void:
 	current_number_index = (current_number_index + 1) % NUMBER_TEXTURES_NORMAL.size()
+	SettingsManager.set_rounds_number_index(current_number_index)
 	_update_number()
