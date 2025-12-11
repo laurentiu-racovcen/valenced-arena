@@ -44,11 +44,15 @@ const SPEED_TEXTURES_HOVER = [
 	preload("res://assets/menu/hover/settings/section-agents/button_speed/fast.png"),
 ]
 
-@onready var current_fov_index = 0
-@onready var current_los_index = 1
-@onready var current_speed_index = 1
+var current_fov_index = 0
+var current_los_index = 1
+var current_speed_index = 1
 
 func _ready() -> void:
+	# Load from SettingsManager
+	current_fov_index = SettingsManager.get_agent_fov_index()
+	current_los_index = SettingsManager.get_agent_los_index()
+	current_speed_index = SettingsManager.get_agent_speed_index()
 	_update_fov()
 	_update_los()
 	_update_speed()
@@ -72,14 +76,17 @@ func _update_speed() -> void:
 
 func _on_fov_pressed() -> void:
 	current_fov_index = (current_fov_index + 1) % FOV_TEXTURES_NORMAL.size()
+	SettingsManager.set_agent_fov_index(current_fov_index)
 	_update_fov()
 
 
 func _on_los_pressed() -> void:
 	current_los_index = (current_los_index + 1) % LOS_TEXTURES_NORMAL.size()
+	SettingsManager.set_agent_los_index(current_los_index)
 	_update_los()
 
 
 func _on_speed_pressed() -> void:
 	current_speed_index = (current_speed_index + 1) % SPEED_TEXTURES_NORMAL.size()
+	SettingsManager.set_agent_speed_index(current_speed_index)
 	_update_speed()

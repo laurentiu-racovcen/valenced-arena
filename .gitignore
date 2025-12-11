@@ -31,3 +31,5 @@ exports/
 *~
 *.bak
 *.old
+
+.github/

@@ -18,6 +18,7 @@ config/icon="res://assets/icon.svg"
 [autoload]
 
 MatchConfig="*res://scripts/core/MatchConfig.gd"
+SettingsManager="*res://scripts/ui/SettingsManager.gd"
 
 [display]
 

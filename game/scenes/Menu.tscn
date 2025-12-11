@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://ccvjhf3e6afnt" path="res://scripts/ui/menus/MenuManager.gd" id="1_6c8sk"]
 [ext_resource type="Texture2D" uid="uid://cajq3afc6wimj" path="res://assets/menu/bg.png" id="2_5p0sf"]
 [ext_resource type="Script" uid="uid://do87wra7gnn2d" path="res://scripts/ui/menus/Gamemode.gd" id="3_7t7qg"]
-[ext_resource type="Script" uid="uid://comrkffnh8thq" path="res://scripts/ui/menus/SettingsManager.gd" id="3_8fhjo"]
+[ext_resource type="Script" uid="uid://comrkffnh8thq" path="res://scripts/ui/menus/SettingsMenuRoot.gd" id="3_8fhjo"]
 [ext_resource type="Texture2D" uid="uid://dph4a2ywakbec" path="res://assets/menu/normal/settings/section-rounds/duration_30s.png" id="4_760fv"]
 [ext_resource type="Script" uid="uid://h0ya0to5h10d" path="res://scripts/ui/menus/AgentSettings.gd" id="4_jvsdq"]
 [ext_resource type="Texture2D" uid="uid://b3vtpsctkqjqk" path="res://assets/menu/normal/common/buttons/arrow_left.png" id="4_l3wcu"]
