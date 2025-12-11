@@ -17,14 +17,11 @@ var role_logic: Node = null
 @onready var visual = $Visual
 
 @onready var gun_pivot = $GunPivot
-@onready var nav: NavigationAgent2D = $Nav
-
 
 var move_dir: Vector2 = Vector2.ZERO
 var aim_dir: Vector2 = Vector2.ZERO
 @export var body_turn_speed: float = 6.0
 @export var gun_turn_speed: float = 10.0
-
 
 var hp: int
 var ammo: int
@@ -40,7 +37,6 @@ func _ready():
 	hp = max_hp
 	ammo = ammo_max
 	_load_role_logic()
-
 
 func get_separation_dir(min_dist: float = 50.0) -> Vector2:
 	var push: Vector2 = Vector2.ZERO
@@ -276,22 +272,10 @@ func receive_message(message: Message) -> void:
 		get_node("AgentComms").receive_message(message)
 	
 func get_path_dir(target_pos: Vector2) -> Vector2:
-	if nav == null:
-		return (target_pos - global_position).normalized()
-
-	nav.target_position = target_pos
-
-	if nav.is_navigation_finished():
-		return Vector2.ZERO
-
-	var next_point: Vector2 = nav.get_next_path_position()
-	var dir: Vector2 = next_point - global_position
-
+	var dir := target_pos - global_position
 	if dir.length() < 1.0:
 		return Vector2.ZERO
-
 	return dir.normalized()
-
 	
 func has_line_of_sight_to(target: Agent) -> bool:
 	if target == null:

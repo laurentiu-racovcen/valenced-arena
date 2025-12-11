@@ -1,8 +1,7 @@
-[gd_scene load_steps=7 format=3 uid="uid://qvxqg4ympsv0"]
+[gd_scene load_steps=6 format=3 uid="uid://qvxqg4ympsv0"]
 
 [ext_resource type="Script" uid="uid://bx8mi6f5vmlrn" path="res://scripts/core/GameManager.gd" id="1_y3yhn"]
 [ext_resource type="PackedScene" uid="uid://dxoskq82w5h82" path="res://scenes/GameMap.tscn" id="2_lx5da"]
-[ext_resource type="PackedScene" uid="uid://cbxmlg03fyu8e" path="res://scenes/agents/Agent.tscn" id="2_qn3w3"]
 [ext_resource type="PackedScene" uid="uid://48306k40p4j4" path="res://scenes/Team.tscn" id="3_qn3w3"]
 [ext_resource type="Script" uid="uid://dw7c674raetoj" path="res://scripts/ui/HUD.gd" id="4_bt7kc"]
 [ext_resource type="Script" uid="uid://k0uf5vefakkv" path="res://scripts/stats/StatsManager.gd" id="5_qvw6d"]
@@ -13,10 +12,6 @@
 script = ExtResource("1_y3yhn")
 
 [node name="AgentsRoot" type="Node2D" parent="."]
-
-[node name="Agent" parent="AgentsRoot" instance=ExtResource("2_qn3w3")]
-position = Vector2(268, 538)
-scale = Vector2(0.10000002, 0.10000002)
 
 [node name="GameMap" parent="." instance=ExtResource("2_lx5da")]
 
