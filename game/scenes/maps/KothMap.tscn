@@ -58,3 +58,27 @@ polygon = PackedVector2Array(682, 391, 622, 390, 617, 337, 622, 284, 633, 266, 6
 
 [node name="CenterLeft" type="CollisionPolygon2D" parent="Collisions" index="15"]
 polygon = PackedVector2Array(680, 599, 643, 600, 625, 611, 624, 637, 626, 704, 644, 706, 649, 735, 651, 748, 714, 746, 724, 779, 758, 786, 791, 778, 800, 766, 799, 739, 794, 709, 740, 707, 741, 692, 731, 683, 728, 633, 684, 627)
+
+[node name="T0_P0" parent="Spawns" index="0"]
+position = Vector2(361, 546)
+
+[node name="T0_P1" parent="Spawns" index="1"]
+position = Vector2(289, 558)
+
+[node name="T0_P2" parent="Spawns" index="2"]
+position = Vector2(273, 480)
+
+[node name="T0_P3" parent="Spawns" index="3"]
+position = Vector2(220, 616)
+
+[node name="T1_P0" parent="Spawns" index="4"]
+position = Vector2(1569, 545)
+
+[node name="T1_P1" parent="Spawns" index="5"]
+position = Vector2(1646, 581)
+
+[node name="T1_P2" parent="Spawns" index="6"]
+position = Vector2(1637, 507)
+
+[node name="T1_P3" parent="Spawns" index="7"]
+position = Vector2(1718, 615)

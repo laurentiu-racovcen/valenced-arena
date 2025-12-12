@@ -9,3 +9,27 @@
 position = Vector2(960, 540)
 scale = Vector2(0.313, 0.313)
 texture = ExtResource("2_y6815")
+
+[node name="T0_P0" parent="Spawns" index="0"]
+position = Vector2(278, 542)
+
+[node name="T0_P1" parent="Spawns" index="1"]
+position = Vector2(195, 474)
+
+[node name="T0_P2" parent="Spawns" index="2"]
+position = Vector2(202, 613)
+
+[node name="T0_P3" parent="Spawns" index="3"]
+position = Vector2(108, 542)
+
+[node name="T1_P0" parent="Spawns" index="4"]
+position = Vector2(1630, 540)
+
+[node name="T1_P1" parent="Spawns" index="5"]
+position = Vector2(1733, 469)
+
+[node name="T1_P2" parent="Spawns" index="6"]
+position = Vector2(1735, 622)
+
+[node name="T1_P3" parent="Spawns" index="7"]
+position = Vector2(1805, 543)
