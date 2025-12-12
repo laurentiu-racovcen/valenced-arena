@@ -1,11 +1,11 @@
 {
   "agent": {
-    "fov_index": 0,
-    "los_index": 1,
-    "speed_index": 1
+	"fov_index": 0,
+	"los_index": 1,
+	"speed_index": 1
   },
   "rounds": {
-    "duration_index": 0,
-    "number_index": 0
+	"duration_index": 0,
+	"number_index": 0
   }
 }

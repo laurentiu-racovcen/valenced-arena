@@ -1,8 +1,8 @@
 [gd_scene load_steps=4 format=3 uid="uid://dxoskq82w5h82"]
 
 [ext_resource type="Script" uid="uid://bdv6ivqxugibw" path="res://scripts/maps/GameMap.gd" id="1_ccdfn"]
-[ext_resource type="Texture2D" uid="uid://jssrcoklnrpf" path="res://assets/maps/map_survival.png" id="2_fy1o8"]
-[ext_resource type="Texture2D" uid="uid://e0ddlne333tw" path="res://assets/maps/map_koth.png" id="3_5r7r6"]
+[ext_resource type="Texture2D" uid="uid://cq3qnooedgb68" path="res://assets/maps/survival.png" id="2_5r7r6"]
+[ext_resource type="Texture2D" uid="uid://efrjp8basf06" path="res://assets/maps/koth.png" id="3_jpp6x"]
 
 [node name="GameMap" type="Node2D"]
 script = ExtResource("1_ccdfn")
@@ -13,7 +13,7 @@ offset = Vector2(960, 540)
 [node name="SurvivalMap" type="Sprite2D" parent="."]
 position = Vector2(960, 540)
 scale = Vector2(0.313, 0.313)
-texture = ExtResource("2_fy1o8")
+texture = ExtResource("2_5r7r6")
 
 [node name="SurvivalMapCollisions" type="StaticBody2D" parent="."]
 
@@ -79,7 +79,7 @@ polygon = PackedVector2Array(674, 645, 673, 692, 675, 699, 663, 699, 663, 740, 7
 [node name="KothMap" type="Sprite2D" parent="."]
 position = Vector2(960, 540)
 scale = Vector2(0.313, 0.313)
-texture = ExtResource("3_5r7r6")
+texture = ExtResource("3_jpp6x")
 
 [node name="Koth Map Collisions" type="StaticBody2D" parent="."]
 
