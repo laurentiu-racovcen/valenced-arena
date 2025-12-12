@@ -1,13 +1,13 @@
 [gd_scene load_steps=13 format=3 uid="uid://cbxmlg03fyu8e"]
 
-[ext_resource type="Texture2D" uid="uid://dea53ruvjv3vg" path="res://assets/icon.svg" id="1_blbl1"]
 [ext_resource type="Script" uid="uid://b13wtyyuft7v7" path="res://scripts/agents/Agent.gd" id="1_y8vf7"]
+[ext_resource type="Texture2D" uid="uid://d00k06cb8417c" path="res://assets/agents/agent_skin.png" id="2_wrp4r"]
 [ext_resource type="Script" uid="uid://475hn1oegpoi" path="res://scripts/agents/AgentPerception.gd" id="3_hdfbc"]
 [ext_resource type="Texture2D" uid="uid://dxuovnp5e4wow" path="res://assets/Skins.png" id="4_k65ak"]
 [ext_resource type="Texture2D" uid="uid://84j75f8jkwn2" path="res://assets/Weapons.png" id="5_wrp4r"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_wrp4r"]
-radius = 89.550255
+radius = 129.99998
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_1idmr"]
 atlas = ExtResource("4_k65ak")
@@ -41,17 +41,17 @@ collision_mask = 3
 script = ExtResource("1_y8vf7")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-visible = false
-texture = ExtResource("1_blbl1")
+texture = ExtResource("2_wrp4r")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0.5, -3)
+position = Vector2(-20, -3.8146973e-06)
 shape = SubResource("CircleShape2D_wrp4r")
 
 [node name="AgentPerception" type="Node" parent="."]
 script = ExtResource("3_hdfbc")
 
 [node name="GunPivot" type="Node2D" parent="."]
+visible = false
 position = Vector2(-4.5474735e-13, 2.3841858e-07)
 rotation = 0.002590987
 
@@ -75,6 +75,7 @@ texture = SubResource("AtlasTexture_iej1q")
 position = Vector2(-0.0046325326, 165.02249)
 
 [node name="Visual" type="Node2D" parent="."]
+visible = false
 
 [node name="BodyTop" type="Sprite2D" parent="Visual"]
 texture = SubResource("AtlasTexture_k65ak")
