@@ -53,5 +53,4 @@ func _physics_process(delta: float) -> void:
 		dir = (dir + sep * 0.8).normalized()
 
 	agent.move_dir = dir
-	agent.velocity = dir * agent.move_speed
-	agent.move_and_slide()
+	agent.move_towards(target_pos, delta, 1.2, 55.0, 0.6)

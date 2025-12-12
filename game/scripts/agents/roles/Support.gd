@@ -41,8 +41,7 @@ func _physics_process(delta: float) -> void:
 				dir = (dir + sep * 0.8).normalized()
 
 			agent.move_dir = dir
-			agent.velocity = dir * agent.move_speed
-			agent.move_and_slide()
+			agent.move_towards(target_pos, delta, 0.95, 95.0, 1.1)
 
 ## === CALLBACK PENTRU ASSIST === ##
 func on_assist_request(message: Message) -> void:

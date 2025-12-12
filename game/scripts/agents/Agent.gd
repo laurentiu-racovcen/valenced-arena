@@ -22,6 +22,7 @@ var move_dir: Vector2 = Vector2.ZERO
 var aim_dir: Vector2 = Vector2.ZERO
 @export var body_turn_speed: float = 6.0
 @export var gun_turn_speed: float = 10.0
+@export var accel := 10.0  # higher = snappier steering
 
 var hp: int
 var ammo: int
@@ -30,13 +31,142 @@ var team
 var map: GameMap
 var fire_cooldown: float = 0.0
 
+@export var wall_mask: int = 1 << 1     # set to your walls/obstacles layer mask
+@export var avoid_probe: float = 60.0   # how far ahead to probe
+@export var avoid_angle_step_deg := 15.0
+@export var avoid_steps := 8            # tries per side (8*15=120 deg)
+
+var avoid_dir := Vector2.ZERO
+var avoid_lock := 0.0
+@export var avoid_lock_time := 0.25
+
+var wall_following := false
+var wall_follow_dir := Vector2.ZERO
+
+@export var stuck_time_to_unstuck := 0.35
+@export var min_progress_px := 2.0
+@export var unstuck_duration := 0.45
+
+var _last_pos: Vector2
+var _stuck_time := 0.0
+var _unstuck_time := 0.0
+var _unstuck_dir := Vector2.ZERO
+
+var roam_target: Vector2
+var roam_timer := 0.0
+@export var roam_retarget_time := 2.5
+@export var roam_reached_dist := 60.0
+
 signal died(agent, killer)
 
 func _ready():
 	add_to_group("agents")  # ca să îi putem găsi ușor pe toți
 	hp = max_hp
 	ammo = ammo_max
+	_last_pos = global_position
 	_load_role_logic()
+
+func _blocked_to_target(target_pos: Vector2) -> bool:
+	var params := PhysicsRayQueryParameters2D.create(global_position, target_pos)
+	params.collision_mask = wall_mask
+	params.exclude = [get_rid()]
+	return not get_world_2d().direct_space_state.intersect_ray(params).is_empty()
+
+func _tangent_dir_from_collision(desired_vel: Vector2) -> Vector2:
+	if get_slide_collision_count() == 0:
+		return Vector2.ZERO
+	var c := get_slide_collision(0)
+	var n: Vector2 = c.get_normal()
+	var t := Vector2(-n.y, n.x).normalized()
+	if t.dot(desired_vel) < 0.0:
+		t = -t
+	return t
+
+func _is_dir_blocked(dir: Vector2) -> bool:
+	if dir.length() < 0.01:
+		return false
+	var from := global_position
+	var to := from + dir.normalized() * avoid_probe
+	var params := PhysicsRayQueryParameters2D.create(from, to)
+	params.collision_mask = wall_mask
+	params.exclude = [get_rid()]
+	return not get_world_2d().direct_space_state.intersect_ray(params).is_empty()
+
+func _pick_unblocked_dir(preferred: Vector2, delta: float) -> Vector2:
+	if avoid_lock > 0.0 and avoid_dir != Vector2.ZERO and not _is_dir_blocked(avoid_dir):
+		avoid_lock -= delta
+		return avoid_dir
+
+	# normal search...
+	var base := preferred.normalized()
+	if base == Vector2.ZERO:
+		return Vector2.ZERO
+	if not _is_dir_blocked(base):
+		avoid_dir = Vector2.ZERO
+		avoid_lock = 0.0
+		return base
+
+	var step := deg_to_rad(avoid_angle_step_deg)
+	for i in range(1, avoid_steps + 1):
+		var d1 := base.rotated(step * i)
+		if not _is_dir_blocked(d1):
+			avoid_dir = d1; avoid_lock = avoid_lock_time
+			return d1
+		var d2 := base.rotated(-step * i)
+		if not _is_dir_blocked(d2):
+			avoid_dir = d2; avoid_lock = avoid_lock_time
+			return d2
+	return Vector2.ZERO
+
+func move_towards(target_pos: Vector2, delta: float, speed_mult := 1.0, sep_dist := 60.0, sep_weight := 0.8) -> void:
+	# 1) Compute preferred seek direction (your old behavior)
+	var dir := get_path_dir(target_pos)
+	var sep := get_separation_dir(sep_dist)
+	if sep != Vector2.ZERO:
+		dir = (dir + sep * sep_weight).normalized()
+
+	# 2) If currently in "unstuck", override direction for a short time
+	if _unstuck_time > 0.0:
+		_unstuck_time -= delta
+		if _unstuck_dir != Vector2.ZERO:
+			dir = _unstuck_dir
+
+	move_dir = dir
+
+	# 3) Move
+	var desired_vel := dir * move_speed * speed_mult
+	velocity = velocity.lerp(desired_vel, clamp(accel * delta, 0.0, 1.0))
+	move_and_slide()
+
+	# 4) Detect lack of progress
+	var progressed := global_position.distance_to(_last_pos)
+	_last_pos = global_position
+
+	var collided := get_slide_collision_count() > 0
+	var trying_to_move := desired_vel.length() > 1.0
+
+	if trying_to_move and (progressed < min_progress_px or collided):
+		_stuck_time += delta
+	else:
+		_stuck_time = 0.0
+
+	# 5) Trigger "unstuck": pick a random direction (biased by wall tangent if colliding)
+	if _stuck_time >= stuck_time_to_unstuck and _unstuck_time <= 0.0:
+		_stuck_time = 0.0
+		_unstuck_time = unstuck_duration
+
+		var base_dir := Vector2.RIGHT.rotated(randf() * TAU)  # fully random
+		if collided:
+			# Use wall tangent to avoid bouncing back into the wall
+			var c := get_slide_collision(0)
+			var n := c.get_normal()
+			var t := Vector2(-n.y, n.x).normalized()
+			if randf() < 0.5:
+				t = -t
+			# Add randomness so agents don't all follow the same line
+			base_dir = t.rotated(randf_range(-0.6, 0.6))
+
+		_unstuck_dir = base_dir.normalized()
 
 func get_separation_dir(min_dist: float = 50.0) -> Vector2:
 	var push: Vector2 = Vector2.ZERO
@@ -185,24 +315,16 @@ func _update_poses(delta: float) -> void:
 		gun_turn_speed * delta
 	)
 
-
-
-
 func _physics_process(delta: float) -> void:
-	# mișcare simplă de test (la tine e deja ceva gen cerc)
-	#var t = Time.get_ticks_msec() / 1000.0
-	#move_dir = Vector2.RIGHT.rotated(t)
-	#velocity = move_dir * move_speed
-	#move_and_slide()
+	# (your movement/roam/role logic can run before this)
 
-	# dacă nu avem țintă, uită-te în direcția de mișcare
 	if perception.get_visible_enemies().is_empty():
 		aim_dir = move_dir.normalized()
 
 	_update_poses(delta)
-	
+
 	fire_cooldown -= delta
-	if fire_cooldown <= 0:
+	if fire_cooldown <= 0.0:
 		_try_shoot()
 
 
@@ -276,24 +398,29 @@ func get_path_dir(target_pos: Vector2) -> Vector2:
 	if dir.length() < 1.0:
 		return Vector2.ZERO
 	return dir.normalized()
-	
+
 func has_line_of_sight_to(target: Agent) -> bool:
 	if target == null:
 		return false
 
 	var space := get_world_2d().direct_space_state
 	var from := global_position
+	# Aim slightly at the center of the target to avoid skimming edges
 	var to := target.global_position
 
 	var params := PhysicsRayQueryParameters2D.create(from, to)
-	params.collision_mask = 1  # AICI trebuie să fie layer-ul PEREȚILOR, nu al agenților
+	
+	# FIX 1: Use the variable wall_mask instead of hardcoded 1
+	params.collision_mask = wall_mask 
+	
+	# FIX 2: Exclude the shooter so the ray doesn't hit the agent's own hitbox
+	params.exclude = [get_rid()] 
 
 	var hit := space.intersect_ray(params)
 
+	# If the ray hits nothing, the path is clear (since we only mask walls)
 	if hit.is_empty():
 		return true
 
-	if hit.collider == target:
-		return true
-
+	# If we hit something (and since we only check walls), line of sight is blocked
 	return false
