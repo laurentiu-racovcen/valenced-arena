@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://do6brr5gn5tts"
-path="res://.godot/imported/blue_advance_agent.png-38e12e9c0e28113f3dfac0ef413e0780.ctex"
+uid="uid://dcglbj3m3qi5x"
+path="res://.godot/imported/blue_tank_agent.png-675263411245f7f677b3c48a372661f8.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/agents/Blue Team/blue_advance_agent.png"
-dest_files=["res://.godot/imported/blue_advance_agent.png-38e12e9c0e28113f3dfac0ef413e0780.ctex"]
+source_file="res://assets/agents/Blue Team/blue_tank_agent.png"
+dest_files=["res://.godot/imported/blue_tank_agent.png-675263411245f7f677b3c48a372661f8.ctex"]
 
 [params]
 
