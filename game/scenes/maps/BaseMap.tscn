@@ -1,0 +1,28 @@
+[gd_scene load_steps=2 format=3 uid="uid://dp6i3xdd0n3hb"]
+
+[ext_resource type="Script" uid="uid://djrl0w6lch13v" path="res://scripts/maps/BaseMap.gd" id="1_0r2ie"]
+
+[node name="BaseMap" type="Node2D"]
+script = ExtResource("1_0r2ie")
+
+[node name="MapTexture" type="Sprite2D" parent="."]
+
+[node name="Collisions" type="StaticBody2D" parent="."]
+
+[node name="Spawns" type="Node2D" parent="."]
+
+[node name="T0_P0" type="Marker2D" parent="Spawns"]
+
+[node name="T0_P1" type="Marker2D" parent="Spawns"]
+
+[node name="T0_P2" type="Marker2D" parent="Spawns"]
+
+[node name="T0_P3" type="Marker2D" parent="Spawns"]
+
+[node name="T1_P0" type="Marker2D" parent="Spawns"]
+
+[node name="T1_P1" type="Marker2D" parent="Spawns"]
+
+[node name="T1_P2" type="Marker2D" parent="Spawns"]
+
+[node name="T1_P3" type="Marker2D" parent="Spawns"]

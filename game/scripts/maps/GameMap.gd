@@ -1,31 +1,52 @@
 extends Node2D
 class_name GameMap
 
-const OBSTACLE_MASK := 1 << 1  # Layer 2, același pe care l-ai pus în TileSet
-
 var time_left: float
 
-func get_play_rect() -> Rect2:
-	var sprite := $SurvivalMap as Sprite2D
-	var tex := sprite.texture
-	if tex == null:
-		return Rect2(Vector2.ZERO, Vector2(1920, 1080)) # fallback
+@export var survival_map: PackedScene
+@export var koth_map: PackedScene
+@export var ctf_map: PackedScene
 
-	var size := Vector2(tex.get_width(), tex.get_height()) * sprite.global_scale
-	return Rect2(sprite.global_position - size * 0.5, size)
+@onready var map_holder: Node = $MapHolder
+var current_map: Node = null
+signal map_loaded
 
-func get_team_spawn_center(team_id: int, padding := 180.0) -> Vector2:
-	var r := get_play_rect()
-	var x := (r.position.x + padding) if team_id == 0 else (r.end.x - padding)
-	return Vector2(x, r.position.y + r.size.y * 0.5)
+func _ready():
+	load_mode(MatchConfig.game_mode)
+
+func load_mode(mode: Enums.GameMode) -> void:
+	print("\nmode = ", mode)
+	# Remove previous map (frees its Sprite2D + StaticBody2D + polygons too). [web:61]
+	if current_map:
+		current_map.queue_free()
+		current_map = null
+
+	var chosen: PackedScene = {
+		Enums.GameMode.SURVIVAL: survival_map,
+		Enums.GameMode.KOTH: koth_map,
+		Enums.GameMode.CTF: ctf_map,
+	}.get(mode)
+
+	if chosen == null:
+		push_error("No map PackedScene set for mode")
+		return
+
+	# Instance and attach to the tree. [web:61]
+	current_map = chosen.instantiate() as BaseMap
+	print("mode =", mode, " type =", typeof(mode))
+	map_holder.add_child(current_map)
+	map_loaded.emit()
+
+func get_spawn_global(team_id: int, index_in_team: int) -> Vector2:
+	if current_map == null:
+		print("null spawn")
+		push_error("Map not loaded yet")
+		return global_position
+	print("spawn marker: ", (current_map as BaseMap).get_spawn_global(team_id, index_in_team))
+	return (current_map as BaseMap).get_spawn_global(team_id, index_in_team)
 
 func has_line_of_sight(a: Vector2, b: Vector2, exclude: Array = []) -> bool:
-	var params := PhysicsRayQueryParameters2D.create(a, b)
-	params.collision_mask = OBSTACLE_MASK      # lovim DOAR obstacolele
-	params.exclude = exclude                   # excludem agentul și ținta
-
-	var hit := get_world_2d().direct_space_state.intersect_ray(params)
-	return hit.is_empty()  # true = nu e perete între ei
+	return 0 # TODO
 
 func is_position_blocked(pos: Vector2) -> bool:
 	var p := PhysicsPointQueryParameters2D.new()

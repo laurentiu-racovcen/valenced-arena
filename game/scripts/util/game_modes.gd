@@ -1,4 +1,4 @@
 extends Resource
 class_name Enums
 
-enum GameMode { SURVIVAL, KOTH, CTF, TRANSPORT }
+enum GameMode { SURVIVAL, KOTH, CTF }

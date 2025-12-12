@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://cly1u0txt5ck0"]
+
+[ext_resource type="PackedScene" uid="uid://dp6i3xdd0n3hb" path="res://scenes/maps/BaseMap.tscn" id="1_xr1k3"]
+[ext_resource type="Texture2D" uid="uid://cq3qnooedgb68" path="res://assets/maps/survival.png" id="2_y6815"]
+
+[node name="BaseMap" instance=ExtResource("1_xr1k3")]
+
+[node name="MapTexture" parent="." index="0"]
+position = Vector2(960, 540)
+scale = Vector2(0.313, 0.313)
+texture = ExtResource("2_y6815")

@@ -1,10 +1,13 @@
-[gd_scene load_steps=6 format=3 uid="uid://qvxqg4ympsv0"]
+[gd_scene load_steps=9 format=3 uid="uid://qvxqg4ympsv0"]
 
 [ext_resource type="Script" uid="uid://bx8mi6f5vmlrn" path="res://scripts/core/GameManager.gd" id="1_y3yhn"]
 [ext_resource type="PackedScene" uid="uid://dxoskq82w5h82" path="res://scenes/GameMap.tscn" id="2_lx5da"]
+[ext_resource type="PackedScene" uid="uid://cly1u0txt5ck0" path="res://scenes/maps/SurvivalMap.tscn" id="3_bt7kc"]
 [ext_resource type="PackedScene" uid="uid://48306k40p4j4" path="res://scenes/Team.tscn" id="3_qn3w3"]
 [ext_resource type="Script" uid="uid://dw7c674raetoj" path="res://scripts/ui/HUD.gd" id="4_bt7kc"]
+[ext_resource type="PackedScene" uid="uid://bh7yx0kbvdsh" path="res://scenes/maps/KothMap.tscn" id="4_qvw6d"]
 [ext_resource type="Script" uid="uid://k0uf5vefakkv" path="res://scripts/stats/StatsManager.gd" id="5_qvw6d"]
+[ext_resource type="PackedScene" uid="uid://bbd4oromnp76g" path="res://scenes/maps/CtfMap.tscn" id="5_y61ah"]
 
 [node name="Match" type="Node2D"]
 
@@ -14,6 +17,9 @@ script = ExtResource("1_y3yhn")
 [node name="AgentsRoot" type="Node2D" parent="."]
 
 [node name="GameMap" parent="." instance=ExtResource("2_lx5da")]
+survival_map = ExtResource("3_bt7kc")
+koth_map = ExtResource("4_qvw6d")
+ctf_map = ExtResource("5_y61ah")
 
 [node name="Teams" type="Node" parent="."]
 

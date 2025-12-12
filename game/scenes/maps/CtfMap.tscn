@@ -1,0 +1,35 @@
+[gd_scene load_steps=3 format=3 uid="uid://bbd4oromnp76g"]
+
+[ext_resource type="PackedScene" uid="uid://dp6i3xdd0n3hb" path="res://scenes/maps/BaseMap.tscn" id="1_q0sxo"]
+[ext_resource type="Texture2D" uid="uid://tw14egstteus" path="res://assets/maps/ctf.png" id="2_h4qtc"]
+
+[node name="BaseMap" instance=ExtResource("1_q0sxo")]
+
+[node name="MapTexture" parent="." index="0"]
+position = Vector2(960, 540)
+scale = Vector2(0.313, 0.313)
+texture = ExtResource("2_h4qtc")
+
+[node name="T0_P0" parent="Spawns" index="0"]
+position = Vector2(348, 491)
+
+[node name="T0_P1" parent="Spawns" index="1"]
+position = Vector2(353, 591)
+
+[node name="T0_P2" parent="Spawns" index="2"]
+position = Vector2(248, 656)
+
+[node name="T0_P3" parent="Spawns" index="3"]
+position = Vector2(252, 453)
+
+[node name="T1_P0" parent="Spawns" index="4"]
+position = Vector2(1570, 491)
+
+[node name="T1_P1" parent="Spawns" index="5"]
+position = Vector2(1570, 591)
+
+[node name="T1_P2" parent="Spawns" index="6"]
+position = Vector2(1669, 656)
+
+[node name="T1_P3" parent="Spawns" index="7"]
+position = Vector2(1669, 453)
