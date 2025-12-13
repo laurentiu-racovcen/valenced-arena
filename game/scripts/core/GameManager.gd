@@ -62,6 +62,12 @@ func _spawn_agents_and_assign_teams() -> void:
 			team.add_member(agent)
 
 			agent.global_position = map.get_spawn_global(team_id, i)
+			var team_id_str: String
+			if team_id == 0:
+				team_id_str = "blue"
+			else:
+				team_id_str = "red"
+			agent.apply_team_skin(team_id_str, agent.role)
 
 func _connect_agent_signals() -> void:
 	for a in get_all_agents():

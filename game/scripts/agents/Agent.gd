@@ -14,14 +14,29 @@ var role_logic: Node = null
 @export var reload_time: float = 2.0
 @export var los_range: float = 1700.0
 @onready var perception: AgentPerception = $AgentPerception
-@onready var visual = $Visual
 
-@onready var gun_pivot = $GunPivot
+@onready var skin: Sprite2D = $Skin
+@onready var collision_shape: CollisionShape2D = $Collision
+
+const TEAM_ROLE_SKINS := {
+	"blue": {
+		Role.LEADER: preload("res://assets/agents/Blue Team/blue_leader_agent.png"),
+		Role.ADVANCE: preload("res://assets/agents/Blue Team/blue_advance_agent.png"),
+		Role.TANK: preload("res://assets/agents/Blue Team/blue_tank_agent.png"),
+		Role.SUPPORT: preload("res://assets/agents/Blue Team/blue_support_agent.png"),
+	},
+	"red": {
+		Role.LEADER: preload("res://assets/agents/Red Team/red_leader_agent.png"),
+		Role.ADVANCE: preload("res://assets/agents/Red Team/red_advance_agent.png"),
+		Role.TANK: preload("res://assets/agents/Red Team/red_tank_agent.png"),
+		Role.SUPPORT: preload("res://assets/agents/Red Team/red_support_agent.png"),
+	},
+}
+
 
 var move_dir: Vector2 = Vector2.ZERO
 var aim_dir: Vector2 = Vector2.ZERO
-@export var body_turn_speed: float = 6.0
-@export var gun_turn_speed: float = 10.0
+@export var body_turn_speed: float = 8.0
 @export var accel := 10.0  # higher = snappier steering
 
 var hp: int
@@ -219,6 +234,14 @@ func _load_role_logic():
 	else:
 		print("[Agent._load_role_logic] %s FAILED - no logic for role %s!" % [name, Role.keys()[role]])
 
+func apply_team_skin(team_id: String, role_value: int) -> void:
+	if not skin:
+		return
+	var tex = TEAM_ROLE_SKINS.get(team_id, {}).get(role_value, null)
+	if tex:
+		skin.visible = true
+		skin.texture = tex
+
 func is_alive() -> bool:
 	return hp > 0
 
@@ -290,7 +313,7 @@ func _try_shoot() -> void:
 
 	aim_dir = dir
 
-	bullet.global_position = $GunPivot/GunSprite/Muzzle.global_position
+	bullet.global_position = $Skin/Muzzle.global_position
 	get_tree().current_scene.add_child(bullet)
 
 	print(name, " trage spre ", best_target.name, " cu dir=", dir)
@@ -301,19 +324,14 @@ func _update_poses(delta: float) -> void:
 		return
 
 	# agentul tău e desenat cu fața în jos => compensăm cu -PI/2
-	var body_angle = aim_dir.angle()
-
-	# corpul se întoarce mai lent
-	visual.rotation = lerp_angle(
-	visual.rotation,
-	body_angle,
-	body_turn_speed * delta)
+	var target_angle = aim_dir.angle()
 	
-	gun_pivot.rotation = lerp_angle(
-		gun_pivot.rotation,
-		body_angle,
-		gun_turn_speed * delta
+	skin.rotation = lerp_angle(
+		skin.rotation,
+		target_angle,
+		body_turn_speed * delta
 	)
+	
 
 func _physics_process(delta: float) -> void:
 	# (your movement/roam/role logic can run before this)
@@ -331,28 +349,8 @@ func _physics_process(delta: float) -> void:
 func set_role(new_role: Role):
 	role = new_role
 
-	var sprite := $Sprite2D
-
 	if team == null:
 		return
-
-	# TEAM A (id = 0)
-	if team.id == 0:
-		if role == Role.LEADER:
-			# Leader strong blue
-			sprite.modulate = Color(0.3, 0.5, 1.0)
-		else:
-			# Other roles light blue
-			sprite.modulate = Color(0.6, 0.75, 1.0)
-
-	# TEAM B (id = 1)
-	elif team.id == 1:
-		if role == Role.LEADER:
-			# Leader strong pink
-			sprite.modulate = Color(1.0, 0.3, 0.7)
-		else:
-			# Other roles light pink
-			sprite.modulate = Color(1.0, 0.6, 0.8)
 
 ## === CALLBACKS PENTRU MESAJE === ##
 
