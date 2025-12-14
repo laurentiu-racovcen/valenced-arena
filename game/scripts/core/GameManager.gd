@@ -6,6 +6,7 @@ extends Node
 var mode: GameModeBase = null
 var time_left: float
 @onready var map = $"../GameMap" as GameMap
+signal round_ended(winning_team: int)
 
 func _ready():
 	time_left = float(MatchConfig.round_time_seconds)
@@ -89,11 +90,15 @@ func get_all_agents() -> Array:
 	return []
 
 func on_round_ended(winning_team: int) -> void:
+	round_ended.emit(winning_team)
+
 	if has_node("../StatsManager"):
 		$"../StatsManager".on_round_ended(winning_team)
-	if has_node("../UIRoot"):
-		$"../UIRoot".call_deferred("show_round_result", winning_team)
-		
+
+	var ps := load("res://scenes/EndRoundMenu.tscn") as PackedScene
+	var menu := ps.instantiate()
+	add_child(menu)
+	menu.show_round_result(winning_team)
 
 func check_win_condition_deferred():
 	await get_tree().process_frame   # ensures all agents fully die

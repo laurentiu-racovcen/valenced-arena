@@ -1,0 +1,49 @@
+[gd_scene load_steps=7 format=3 uid="uid://mlfhpfijya8e"]
+
+[ext_resource type="Script" uid="uid://c7etxas7qf0q7" path="res://scripts/ui/menus/EndRoundMenu.gd" id="1_eowo4"]
+[ext_resource type="Texture2D" uid="uid://drwqdeywq1oxv" path="res://assets/menu/normal/common/buttons/back.png" id="2_5r0g2"]
+[ext_resource type="Texture2D" uid="uid://c8846fg3eqoex" path="res://assets/menu/hover/common/buttons/back.png" id="3_5r0g2"]
+[ext_resource type="Texture2D" uid="uid://iqu2bk83dlsg" path="res://assets/menu/normal/common/buttons/home.png" id="4_2lprj"]
+[ext_resource type="Texture2D" uid="uid://dpp45lk4pd543" path="res://assets/menu/hover/common/buttons/home.png" id="5_ha1mu"]
+[ext_resource type="Texture2D" uid="uid://628diamhyic1" path="res://assets/menu/normal/match-finished/title_match_finished.png" id="7_eowo4"]
+
+[node name="EndRoundMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_eowo4")
+
+[node name="RestartButton" type="TextureButton" parent="."]
+z_index = 1
+layout_mode = 0
+offset_left = 1141.0
+offset_top = 714.00006
+offset_right = 1584.0
+offset_bottom = 1139.0
+scale = Vector2(0.365, 0.365)
+texture_normal = ExtResource("2_5r0g2")
+texture_hover = ExtResource("3_5r0g2")
+
+[node name="MainMenuButton" type="TextureButton" parent="."]
+z_index = 1
+layout_mode = 0
+offset_left = 613.00006
+offset_top = 714.00006
+offset_right = 1165.0
+offset_bottom = 1271.0
+scale = Vector2(0.313, 0.313)
+texture_normal = ExtResource("4_2lprj")
+texture_hover = ExtResource("5_ha1mu")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+z_index = 1
+layout_mode = 0
+offset_left = 575.0
+offset_top = 150.00002
+offset_right = 1655.0
+offset_bottom = 554.0
+scale = Vector2(0.7, 0.7)
+texture = ExtResource("7_eowo4")
