@@ -57,8 +57,6 @@ func _ready() -> void:
 	_update_los()
 	_update_speed()
 
-
-
 func _update_fov() -> void:
 	fov_display.texture_normal = FOV_TEXTURES_NORMAL[current_fov_index]
 	fov_display.texture_hover = FOV_TEXTURES_HOVER[current_fov_index]

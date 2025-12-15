@@ -7,13 +7,15 @@ var role_logic: Node = null
 @export var role: Role = Role.ADVANCE
 
 @export var max_hp: int = 100
-@export var move_speed: float = 200.0
 @export var damage_per_shot: int = 10
 @export var fire_rate: float = 2.0
 @export var ammo_max: int = 30
 @export var reload_time: float = 2.0
-@export var los_range: float = 1700.0
-@export var fov_angle_deg: float = 120.0  # Field of view angle in degrees (120 = can see 60 degrees each side)
+
+@export var fov_angle_deg: float = Enums.AGENT_SETTING_FOV[SettingsManager.get_agent_fov_index()]  # Field of view angle in degrees (120 = can see 60 degrees each side)
+@export var los_range: float = Enums.AGENT_SETTING_LOS[SettingsManager.get_agent_los_index()]
+@export var move_speed: float = Enums.AGENT_SETTING_SPEED[SettingsManager.get_agent_speed_index()]
+
 @onready var perception: AgentPerception = $AgentPerception
 
 @onready var skin: Sprite2D = $Skin
