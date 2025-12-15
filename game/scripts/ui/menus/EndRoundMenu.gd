@@ -22,7 +22,7 @@ func set_text_format():
 	label.anchor_top = 0.0
 	label.anchor_right = 0.5
 	label.anchor_bottom = 0.0
-	label.position = Vector2(-138, 540)
+	label.position = Vector2(-175, 540)
 
 	ls = LabelSettings.new()
 	ls.font = ui_font
@@ -36,7 +36,15 @@ func set_text_format():
 	add_child(label)
 
 func show_round_result(winning_team: int) -> void:
-	label.text = "Team " + str(winning_team) + " won!"
+	var winning_team_name : String
+	if winning_team == 0:
+		winning_team_name = "Blue"
+	elif winning_team == 1:
+		winning_team_name = "Red"
+	else:
+		winning_team_name = "No"
+
+	label.text = winning_team_name + " team won!"
 
 	# Stop the world
 	get_tree().paused = true
