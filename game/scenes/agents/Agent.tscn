@@ -1,11 +1,12 @@
-[gd_scene load_steps=5 format=3 uid="uid://cbxmlg03fyu8e"]
+[gd_scene load_steps=6 format=3 uid="uid://cbxmlg03fyu8e"]
 
 [ext_resource type="Script" uid="uid://b13wtyyuft7v7" path="res://scripts/agents/Agent.gd" id="1_y8vf7"]
 [ext_resource type="Texture2D" uid="uid://d00k06cb8417c" path="res://assets/agents/agent_skin.png" id="2_wrp4r"]
 [ext_resource type="Script" uid="uid://475hn1oegpoi" path="res://scripts/agents/AgentPerception.gd" id="3_hdfbc"]
+[ext_resource type="Script" uid="uid://kkj5a4j1pyvk" path="res://scripts/agents/AgentComms.gd" id="4_comms"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_wrp4r"]
-radius = 129.99998
+radius = 118.75
 
 [node name="Agent" type="CharacterBody2D"]
 z_index = 1
@@ -13,6 +14,12 @@ rotation = -1.5707964
 scale = Vector2(0.16, 0.16)
 collision_mask = 3
 script = ExtResource("1_y8vf7")
+los_range = 1500.0
+fov_angle_deg = 90.0
+debug_ai = true
+debug_draw_fov = true
+debug_fov_radius = 300.0
+debug_fov_clip_to_walls = true
 
 [node name="Skin" type="Sprite2D" parent="."]
 texture = ExtResource("2_wrp4r")
@@ -21,8 +28,11 @@ texture = ExtResource("2_wrp4r")
 position = Vector2(-6.25, 306.25)
 
 [node name="Collision" type="CollisionShape2D" parent="."]
-position = Vector2(-20, -3.8146973e-06)
+position = Vector2(-12.5, -6.2500005)
 shape = SubResource("CircleShape2D_wrp4r")
 
 [node name="AgentPerception" type="Node" parent="."]
 script = ExtResource("3_hdfbc")
+
+[node name="AgentComms" type="Node" parent="."]
+script = ExtResource("4_comms")

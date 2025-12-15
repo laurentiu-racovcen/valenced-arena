@@ -7,6 +7,11 @@ var comms_manager: CommsManager
 ## Queue mesaje primite
 var received_messages: Array[Message] = []
 
+# Rate limiting (prevents output spam + comms spam when taking sustained damage)
+@export var assist_broadcast_cooldown: float = 1.0
+var _last_assist_sent_at: float = -999.0
+var _last_assist_urgency: int = 0
+
 func _ready():
 	print("[AgentComms] _ready() called for agent: ", get_parent().name if get_parent() else "no parent")
 	
@@ -83,9 +88,16 @@ func request_assist(position: Vector2, urgency: int = 3, targets: Array[String] 
 		return false
 	
 	urgency = clampi(urgency, 1, 5)
+
+	var now: float = Time.get_ticks_msec() / 1000.0
+	var can_send: bool = (now - _last_assist_sent_at) >= assist_broadcast_cooldown or urgency > _last_assist_urgency
+	if not can_send:
+		return false
+	_last_assist_sent_at = now
+	_last_assist_urgency = urgency
 	
 	var message = Message.new(
-		Time.get_ticks_msec() / 1000.0,
+		now,
 		agent.id if agent.id != "" else agent.name,
 		targets,
 		Message.Type.ASSIST,
@@ -96,7 +108,9 @@ func request_assist(position: Vector2, urgency: int = 3, targets: Array[String] 
 		}
 	)
 	
-	print("[AgentComms] Sending ASSIST message from %s" % message.sender)
+	# Print only when AI debug is enabled to avoid output overflow.
+	if agent != null and agent.debug_ai:
+		print("[AgentComms] Sending ASSIST message from %s" % message.sender)
 	return comms_manager.send_message(message)
 
 func broadcast_focus_target(target_agent_id: String, target_position: Vector2, priority: int = 3, targets: Array[String] = ["*"]) -> bool:
@@ -107,7 +121,7 @@ func broadcast_focus_target(target_agent_id: String, target_position: Vector2, p
 	
 	var message = Message.new(
 		Time.get_ticks_msec() / 1000.0,
-		agent.id,
+		agent.id if agent != null and agent.id != "" else (agent.name if agent != null else ""),
 		targets,
 		Message.Type.FOCUS,
 		{

@@ -26,3 +26,5 @@ script = ExtResource("1_0r2ie")
 [node name="T1_P2" type="Marker2D" parent="Spawns"]
 
 [node name="T1_P3" type="Marker2D" parent="Spawns"]
+
+[node name="NavigationPath" type="NavigationRegion2D" parent="."]
