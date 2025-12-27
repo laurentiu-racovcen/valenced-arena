@@ -7,10 +7,29 @@ var mode: GameModeBase = null
 var time_left: float
 @onready var map = $"../GameMap" as GameMap
 signal round_ended(winning_team: int)
+signal match_ended(winning_team: int)
+
+var scoreA : int = 0
+var scoreB : int = 0
+
+var round_over := false
+var rounds_played := 0
+var match_over := false
+
+signal score_changed(a: int, b: int)
+@export var score_hud_scene: PackedScene
+var score_hud: ScoreHUD
 
 func _ready():
 	time_left = float(MatchConfig.round_time_seconds)
 	map.map_loaded.connect(_on_map_loaded)
+
+	# for real-time score display
+	score_hud = preload("res://scenes/ScoreHUD.tscn").instantiate() as ScoreHUD
+	get_tree().root.add_child(score_hud)
+	score_hud.set_score(scoreA, scoreB)
+
+	score_changed.connect(score_hud.set_score)
 
 func _on_map_loaded():
 	_spawn_agents_and_assign_teams()
@@ -46,7 +65,13 @@ func _spawn_agents_and_assign_teams() -> void:
 	var agents_root := $"../AgentsRoot"
 	var teams_node := $"../Teams"
 
-	# Optional but strongly recommended: remove any Agent you placed in the editor
+	# Clear team lists (drop references to old agents)
+	for t in teams_node.get_children():
+		var team := t as Team
+		if team:
+			team.members.clear()
+
+	# Remove old agent nodes
 	for c in agents_root.get_children():
 		c.queue_free()
 
@@ -90,7 +115,72 @@ func get_all_agents() -> Array:
 	return []
 
 func on_round_ended(winning_team: int) -> void:
+	if round_over or match_over:
+		return
+	round_over = true
+
+	print("round winning team = ", winning_team)
 	round_ended.emit(winning_team)
+	if winning_team == 0:
+		scoreA += 1
+	elif winning_team == 1:
+		scoreB += 1
+
+	score_changed.emit(scoreA, scoreB)
+
+	rounds_played += 1
+
+	# Decide if match ends
+	if rounds_played >= Enums.ROUNDS_SETTING_NUMBER[SettingsManager.get_rounds_number_index()]:
+		match_over = true
+		var match_winner := -1
+		if scoreA > scoreB: match_winner = 0
+		elif scoreB > scoreA: match_winner = 1
+
+		on_match_ended(match_winner)
+		return
+
+
+	# restart the map
+	get_tree().paused = true
+	
+	# Show countdown UI that still processes while paused
+	var ps := preload("res://scenes/RoundCountdown.tscn")
+	var countdown := ps.instantiate() as RoundCountdown
+	$"../UIRoot".add_child(countdown)  # or wherever your UI lives
+
+	var win_team_str: String
+	if winning_team == 0:
+		win_team_str = "Blue"
+	elif winning_team == 1:
+		win_team_str = "Red"
+	else:
+		win_team_str = "No"
+	countdown.start(5.0, win_team_str)
+
+	# Wait until countdown finishes
+	await countdown.finished
+
+	# pause for 5 seconds
+	get_tree().paused = false
+
+	# reset left round time
+	time_left = float(MatchConfig.round_time_seconds)
+	map.time_left = time_left
+	
+	round_over = false
+	
+	if mode:
+		_on_map_loaded()
+
+func on_match_ended(winning_team: int) -> void:
+	# Remove in-match score HUD
+	if is_instance_valid(score_hud):
+		score_hud.queue_free()
+		score_hud = null
+
+	print("Team ", winning_team, " won!")
+	match_ended.emit(winning_team)
 
 	if has_node("../StatsManager"):
 		$"../StatsManager".on_round_ended(winning_team)
@@ -98,7 +188,7 @@ func on_round_ended(winning_team: int) -> void:
 	var ps := load("res://scenes/EndRoundMenu.tscn") as PackedScene
 	var menu := ps.instantiate()
 	add_child(menu)
-	menu.show_round_result(winning_team)
+	menu.show_round_result(winning_team, scoreA, scoreB)
 
 func check_win_condition_deferred():
 	await get_tree().process_frame   # ensures all agents fully die

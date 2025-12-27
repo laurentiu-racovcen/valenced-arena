@@ -164,7 +164,7 @@ func on_assist_request(message: Message) -> void:
 func _get_tank() -> Agent:
 	if not agent or not agent.team:
 		return null
-	
+
 	for m in agent.team.members:
 		if m.role == Agent.Role.TANK and m.is_alive():
 			return m

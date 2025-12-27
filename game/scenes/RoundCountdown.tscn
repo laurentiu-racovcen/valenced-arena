@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=3 uid="uid://dl1n16uuxerbw"]
+
+[ext_resource type="Script" uid="uid://dh61164iyjtvk" path="res://scripts/ui/RoundCountdown.gd" id="1_3rcl6"]
+
+[node name="RoundCountdown" type="Control"]
+z_index = 1
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_3rcl6")
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0

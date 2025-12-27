@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://628diamhyic1" path="res://assets/menu/normal/match-finished/title_match_finished.png" id="7_eowo4"]
 
 [node name="EndRoundMenu" type="Control"]
+z_index = 1
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0

@@ -1,4 +1,4 @@
-extends Control
+extends CanvasLayer
 
 @export var end_round_menu_scene: PackedScene
 @onready var game_manager = $"../core/GameManager"
@@ -9,8 +9,6 @@ func _ready() -> void:
 		game_manager.round_ended.connect(_on_round_ended)
 
 func _on_round_ended(winning_team: int) -> void:
-	#get_tree().paused = true
-
 	if end_menu:
 		end_menu.queue_free()
 
