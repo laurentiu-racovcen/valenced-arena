@@ -21,7 +21,7 @@ signal score_changed(a: int, b: int)
 var score_hud: ScoreHUD
 
 func _ready():
-	time_left = float(MatchConfig.round_time_seconds)
+	time_left = float(Enums.ROUNDS_SETTING_DURATION[SettingsManager.get_rounds_duration_index()])
 	map.map_loaded.connect(_on_map_loaded)
 
 	# for real-time score display
@@ -165,7 +165,7 @@ func on_round_ended(winning_team: int) -> void:
 	get_tree().paused = false
 
 	# reset left round time
-	time_left = float(MatchConfig.round_time_seconds)
+	time_left = float(Enums.ROUNDS_SETTING_DURATION[SettingsManager.get_rounds_duration_index()])
 	map.time_left = time_left
 	
 	round_over = false
