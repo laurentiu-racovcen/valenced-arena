@@ -53,7 +53,10 @@ func _physics_process(delta: float) -> void:
 					continue
 		# Hit something we should stop on (enemy agent, wall, etc.)
 		if collider != null and collider is Agent:
-			(collider as Agent).take_damage(damage, shooter)
+			# Replay bullets set shooter=null and should be visual-only.
+			# Stop on agents but do not apply damage/side effects.
+			if shooter != null and damage > 0:
+				(collider as Agent).take_damage(damage, shooter)
 		queue_free()
 		return
 
@@ -72,7 +75,8 @@ func _on_body_entered(body: Node) -> void:
 		# Ignore teammates (no friendly fire)
 		if shooter != null and (body as Agent).team != null and shooter.team != null and (body as Agent).team == shooter.team:
 			return
-		(body as Agent).take_damage(damage, shooter)
+		if shooter != null and damage > 0:
+			(body as Agent).take_damage(damage, shooter)
 		queue_free()
 		return
 

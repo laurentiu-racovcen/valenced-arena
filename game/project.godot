@@ -19,6 +19,7 @@ config/icon="res://assets/icon.svg"
 
 MatchConfig="*res://scripts/core/MatchConfig.gd"
 SettingsManager="*res://scripts/ui/SettingsManager.gd"
+Replay="*res://scripts/stats/ReplayManager.gd"
 
 [display]
 

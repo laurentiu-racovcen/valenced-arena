@@ -21,21 +21,48 @@ signal score_changed(a: int, b: int)
 var score_hud: ScoreHUD
 
 func _ready():
+	# Always sync from MatchConfig at runtime (export default is evaluated early).
+	mode_type = MatchConfig.game_mode
+
 	time_left = float(Enums.ROUNDS_SETTING_DURATION[SettingsManager.get_rounds_duration_index()])
 	map.map_loaded.connect(_on_map_loaded)
 
-	# for real-time score display
-	score_hud = preload("res://scenes/ScoreHUD.tscn").instantiate() as ScoreHUD
-	get_tree().root.add_child(score_hud)
-	score_hud.set_score(scoreA, scoreB)
+	# Skip ScoreHUD during replay playback (it should not leak into the menu).
+	var in_replay_playback := false
+	if get_tree().root.has_node("Replay"):
+		var replay := get_tree().root.get_node("Replay")
+		if replay != null and replay.has_method("is_playback_pending"):
+			in_replay_playback = bool(replay.call("is_playback_pending"))
 
-	score_changed.connect(score_hud.set_score)
+	if not in_replay_playback:
+		# for real-time score display
+		score_hud = preload("res://scenes/ScoreHUD.tscn").instantiate() as ScoreHUD
+		get_tree().root.add_child(score_hud)
+		score_hud.set_score(scoreA, scoreB)
+		score_changed.connect(score_hud.set_score)
 
 func _on_map_loaded():
 	_spawn_agents_and_assign_teams()
 	var sm := $"../StatsManager" as StatsManager
 	if sm != null and sm.has_method("start_round"):
 		sm.start_round(get_all_agents())
+	# Replay integration (recording or playback)
+	if get_tree().root.has_node("Replay"):
+		var replay := get_tree().root.get_node("Replay")
+		if replay != null:
+			var agents := get_all_agents()
+			# If a replay is pending, enter playback mode and skip gameplay logic.
+			if replay.has_method("is_playback_pending") and bool(replay.call("is_playback_pending")):
+				replay.call("begin_playback", agents)
+				set_process(false) # stop match timer + mode updates
+				return
+			# Otherwise record this round. (If already recording, just update agent refs.)
+			if replay.has_method("is_recording") and bool(replay.call("is_recording")):
+				if replay.has_method("set_recording_agents"):
+					replay.call("set_recording_agents", agents)
+			else:
+				if replay.has_method("begin_recording"):
+					replay.call("begin_recording", agents, int(mode_type))
 
 	_init_mode()
 	_connect_agent_signals()
@@ -88,6 +115,9 @@ func _spawn_agents_and_assign_teams() -> void:
 			var agent := agent_scene.instantiate() as Agent
 			agents_root.add_child(agent)
 			agent.map = map
+			# Assign a stable ID so recordings can map agents across runs.
+			agent.id = "T%d_%d" % [team_id, i]
+			agent.name = agent.id
 
 			var team := team_a if team_id == 0 else team_b
 			team.add_member(agent)
@@ -177,6 +207,12 @@ func on_round_ended(winning_team: int) -> void:
 		_on_map_loaded()
 
 func on_match_ended(winning_team: int) -> void:
+	# Finalize replay recording
+	if get_tree().root.has_node("Replay"):
+		var replay := get_tree().root.get_node("Replay")
+		if replay != null and replay.has_method("end_recording"):
+			replay.call("end_recording", true)
+
 	# Remove in-match score HUD
 	if is_instance_valid(score_hud):
 		score_hud.queue_free()
