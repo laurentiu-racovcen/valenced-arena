@@ -17,34 +17,59 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_eowo4")
 
-[node name="RestartButton" type="TextureButton" parent="."]
+[node name="Layout" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="Layout"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="TextureRect" type="TextureRect" parent="Layout/VBox"]
 z_index = 1
-layout_mode = 0
-offset_left = 1141.0
-offset_top = 714.00006
-offset_right = 1584.0
-offset_bottom = 1139.0
-scale = Vector2(0.365, 0.365)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+texture = ExtResource("7_eowo4")
+stretch_mode = 5
+
+[node name="TextPanel" type="PanelContainer" parent="Layout/VBox"]
+custom_minimum_size = Vector2(0, 300)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="StatsLabel" type="RichTextLabel" parent="Layout/VBox/TextPanel"]
+layout_mode = 2
+mouse_filter = 2
+bbcode_enabled = true
+
+[node name="Buttons" type="HBoxContainer" parent="Layout/VBox"]
+layout_mode = 2
+size_flags_vertical = 4
+alignment = 1
+
+[node name="RestartButton" type="TextureButton" parent="Layout/VBox/Buttons"]
+z_index = 1
+custom_minimum_size = Vector2(300, 300)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 4
 texture_normal = ExtResource("2_5r0g2")
 texture_hover = ExtResource("3_5r0g2")
+ignore_texture_size = true
+stretch_mode = 0
 
-[node name="MainMenuButton" type="TextureButton" parent="."]
+[node name="MainMenuButton" type="TextureButton" parent="Layout/VBox/Buttons"]
 z_index = 1
-layout_mode = 0
-offset_left = 613.00006
-offset_top = 714.00006
-offset_right = 1165.0
-offset_bottom = 1271.0
-scale = Vector2(0.313, 0.313)
+custom_minimum_size = Vector2(300, 300)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 4
 texture_normal = ExtResource("4_2lprj")
 texture_hover = ExtResource("5_ha1mu")
-
-[node name="TextureRect" type="TextureRect" parent="."]
-z_index = 1
-layout_mode = 0
-offset_left = 575.0
-offset_top = 150.00002
-offset_right = 1655.0
-offset_bottom = 554.0
-scale = Vector2(0.7, 0.7)
-texture = ExtResource("7_eowo4")
+ignore_texture_size = true
+stretch_mode = 0

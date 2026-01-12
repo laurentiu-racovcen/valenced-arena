@@ -33,8 +33,13 @@ func _ready():
 
 func _on_map_loaded():
 	_spawn_agents_and_assign_teams()
+	var sm := $"../StatsManager" as StatsManager
+	if sm != null and sm.has_method("start_round"):
+		sm.start_round(get_all_agents())
+
 	_init_mode()
 	_connect_agent_signals()
+	
 
 func _process(delta: float) -> void:
 	time_left -= delta
@@ -106,8 +111,6 @@ func _on_agent_died(agent, killer) -> void:
 func on_agent_killed(agent, killer) -> void:
 	if mode and mode.has_method("on_agent_killed"):
 		mode.on_agent_killed(agent, killer)
-	if has_node("../StatsManager"):
-		$"../StatsManager".on_agent_killed(agent, killer)
 
 func get_all_agents() -> Array:
 	if has_node("../AgentsRoot"):
@@ -182,13 +185,27 @@ func on_match_ended(winning_team: int) -> void:
 	print("Team ", winning_team, " won!")
 	match_ended.emit(winning_team)
 
-	if has_node("../StatsManager"):
-		$"../StatsManager".on_round_ended(winning_team)
-
 	var ps := load("res://scenes/EndRoundMenu.tscn") as PackedScene
 	var menu := ps.instantiate()
 	add_child(menu)
-	menu.show_round_result(winning_team, scoreA, scoreB)
+
+	var sm := $"../StatsManager" as StatsManager
+	if sm != null and sm.has_method("build_round_result"):
+		# ia comms din echipe (Team.gd are $Comms) [file:56]
+		var teamA := $"../Teams/TeamA" as Team
+		var teamB := $"../Teams/TeamB" as Team
+		var result := sm.build_round_result(
+			winning_team,
+			scoreA,
+			scoreB,
+			teamA.comms if teamA != null else null,
+			teamB.comms if teamB != null else null
+		)
+
+		menu.show_round_stats(result)
+	else:
+		# fallback (cum e acum)
+		menu.show_round_result(winning_team, scoreA, scoreB)
 
 func check_win_condition_deferred():
 	await get_tree().process_frame   # ensures all agents fully die

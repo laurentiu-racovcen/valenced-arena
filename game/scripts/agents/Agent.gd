@@ -533,6 +533,12 @@ func take_damage(amount: int, from_agent) -> void:
 		aim_dir = direction_to_attacker
 
 	hp -= amount
+	var stats := get_tree().current_scene.get_node_or_null("StatsManager") as StatsManager
+	if stats != null:
+		var attacker: Agent = null
+		if is_instance_valid(from_agent) and from_agent is Agent:
+			attacker = from_agent as Agent
+		stats.record_damage(self, amount, attacker)
 	
 	# Cerere ajutor dacă HP critic
 	if hp > 0 and hp < max_hp * 0.3:
