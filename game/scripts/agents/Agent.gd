@@ -518,19 +518,54 @@ func apply_team_skin(team_id: String, role_value: int) -> void:
 func is_alive() -> bool:
 	return hp > 0
 
+#func take_damage(amount: int, from_agent) -> void:
+	## Safety: prevent friendly fire (and self-damage).
+	## Bullets pass `shooter` here, so this blocks team-kills even if they happen.
+	#if from_agent != null and from_agent is Agent:
+		#var src := from_agent as Agent
+		#if src == self:
+			#return
+		#if team != null and src.team != null and src.team == team:
+			#return
+		#
+		## Turn around to face attacker
+		#var direction_to_attacker = (src.global_position - global_position).normalized()
+		#aim_dir = direction_to_attacker
+#
+	#hp -= amount
+	#
+	## Cerere ajutor dacă HP critic
+	#if hp > 0 and hp < max_hp * 0.3:
+		#if has_node("AgentComms"):
+			#var agent_comms = get_node("AgentComms")
+			## Verifică că AgentComms e complet inițializat
+			#if agent_comms and agent_comms.has_method("request_assist") and agent_comms.comms_manager:
+				#var urgency = 5 if hp < max_hp * 0.15 else 3
+				#agent_comms.request_assist(global_position, urgency)
+				#print("[Agent] %s cere ajutor! (HP: %d/%d, urgency: %d)" % [
+					#id, hp, max_hp, urgency
+				#])
+	#
+	#if hp <= 0:
+		#if team:
+			#team.remove_member(self)
+		#emit_signal("died", self, from_agent)
+		#queue_free()
+# În Agent.gd, la începutul fișierului
+# Adaugă la începutul Agent.gd
+# În Agent.gd
+var _is_dying: bool = false # [cite: 2]
+
 func take_damage(amount: int, from_agent) -> void:
-	# Safety: prevent friendly fire (and self-damage).
-	# Bullets pass `shooter` here, so this blocks team-kills even if they happen.
+	if _is_dying: return # Previne respawn multiplu 
+	
 	if from_agent != null and from_agent is Agent:
 		var src := from_agent as Agent
-		if src == self:
-			return
-		if team != null and src.team != null and src.team == team:
+		if src == self or (team != null and src.team != null and src.team == team):
 			return
 		
-		# Turn around to face attacker
-		var direction_to_attacker = (src.global_position - global_position).normalized()
-		aim_dir = direction_to_attacker
+		# Se întoarce spre atacator
+		aim_dir = (src.global_position - global_position).normalized()
 
 	hp -= amount
 	var stats := get_tree().current_scene.get_node_or_null("StatsManager") as StatsManager
@@ -540,24 +575,13 @@ func take_damage(amount: int, from_agent) -> void:
 			attacker = from_agent as Agent
 		stats.record_damage(self, amount, attacker)
 	
-	# Cerere ajutor dacă HP critic
-	if hp > 0 and hp < max_hp * 0.3:
-		if has_node("AgentComms"):
-			var agent_comms = get_node("AgentComms")
-			# Verifică că AgentComms e complet inițializat
-			if agent_comms and agent_comms.has_method("request_assist") and agent_comms.comms_manager:
-				var urgency = 5 if hp < max_hp * 0.15 else 3
-				agent_comms.request_assist(global_position, urgency)
-				print("[Agent] %s cere ajutor! (HP: %d/%d, urgency: %d)" % [
-					id, hp, max_hp, urgency
-				])
-	
 	if hp <= 0:
+		_is_dying = true
 		if team:
 			team.remove_member(self)
-		emit_signal("died", self, from_agent)
+		
+		died.emit(self, from_agent) # [cite: 8]
 		queue_free()
-
 func _has_friendly_in_line_of_fire(target: Agent) -> bool:
 	# Returns true if a teammate is the first agent hit along the shot line.
 	if target == null or team == null:

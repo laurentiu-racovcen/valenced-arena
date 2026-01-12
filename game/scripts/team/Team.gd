@@ -19,7 +19,7 @@ const ROLE_ORDER = [
 	Agent.Role.ADVANCE
 ]
 
-func add_member(agent: Agent) -> void:
+func add_member(agent: Agent, setup: int) -> void:
 	members.append(agent)
 	agent.team = self
 	# Keep id/forward_dir in sync even if members are added after _ready().
@@ -29,7 +29,8 @@ func add_member(agent: Agent) -> void:
 	if agent.id == "":
 		agent.id = agent.name
 
-	_assign_roles()
+	if setup == 0:
+		_assign_roles()
 	
 func _assign_roles():
 	# First 3 agents get: Leader, Tank, Support

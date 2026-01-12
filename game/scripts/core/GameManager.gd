@@ -120,7 +120,7 @@ func _spawn_agents_and_assign_teams() -> void:
 			agent.name = agent.id
 
 			var team := team_a if team_id == 0 else team_b
-			team.add_member(agent)
+			team.add_member(agent, 0)
 
 			agent.global_position = map.get_spawn_global(team_id, i)
 			var team_id_str: String
@@ -131,12 +131,91 @@ func _spawn_agents_and_assign_teams() -> void:
 			agent.apply_team_skin(team_id_str, agent.role)
 
 func _connect_agent_signals() -> void:
-	for a in get_all_agents():
-		if not a.is_connected("died", Callable(self, "_on_agent_died")):
-			a.connect("died", Callable(self, "_on_agent_died"))
+	if mode is KothMode:
+		for a in get_all_agents():
+			if not a.is_connected("died", Callable(self, "_on_agent_died")):
+				a.connect("died", Callable(self, "_on_agent_died"))
 
-func _on_agent_died(agent, killer) -> void:
+#func _on_agent_died(agent, killer) -> void:
+	#on_agent_killed(agent, killer)
+#func _on_agent_died(agent, killer) -> void:
+	## Identificăm echipa și indexul pentru respawn
+	#var team_id = 0 if agent.team.name.contains("TeamA") else 1
+	## Folosim un index generic sau păstrăm indexul original dacă e necesar
+	#respawn_agent(team_id, randi() % agents_per_team)
+	#
+	#on_agent_killed(agent, killer)
+# În GameManager.gd
+var _respawn_queues = {
+	0: [], # Echipa Albastră (TeamA)
+	1: []  # Echipa Roșie (TeamB)
+}
+
+func _on_agent_died(agent: Agent, killer) -> void:
+	if round_over or match_over:
+		return
+
+	# Identificăm echipa (0 pentru Blue, 1 pentru Red)
+	var team_id = 0
+	if agent.team and agent.team.name.contains("TeamB"):
+		team_id = 1
+		
+	# Salvăm rolul exact în coada echipei [cite: 38, 39]
+	_respawn_queues[team_id].push_back(agent.role)
+	
+	
 	on_agent_killed(agent, killer)
+	
+	# Pornim timer-ul de respawn
+	if mode is KothMode:
+		get_tree().create_timer(3.0).timeout.connect(_on_respawn_timer_expired.bind(team_id))
+
+func _on_respawn_timer_expired(team_id: int):
+	if round_over or match_over:
+		return
+	
+	# Extragem primul rol care a murit din coadă
+	if _respawn_queues[team_id].is_empty():
+		return
+		
+	var next_role = _respawn_queues[team_id].pop_front()
+	_perform_respawn(team_id, next_role)
+
+func _perform_respawn(team_id: int, role_to_apply: int):
+	var agents_root := $"../AgentsRoot"
+	var teams_node := $"../Teams"
+	
+	var agent = agent_scene.instantiate() as Agent
+	
+	# SETĂM ROLUL înainte de add_child [cite: 38]
+	agent.role = role_to_apply
+	
+	agents_root.add_child(agent)
+	
+	# Forțăm încărcarea AI-ului pentru rolul nou [cite: 29, 39]
+	# Aceasta este linia critică: obligăm agentul să își schimbe logica dacă a plecat pe default
+	agent.set_role(role_to_apply) 
+
+	agent.map = map
+	var team = teams_node.get_node("TeamA") if team_id == 0 else teams_node.get_node("TeamB")
+	team.add_member(agent, 1)
+	
+	# Poziționare [cite: 41]
+	var spawn_idx = randi() % agents_per_team
+	agent.global_position = map.get_spawn_global(team_id, spawn_idx)
+	
+	# Configurare finală [cite: 2, 42]
+	var team_id_str = "blue" if team_id == 0 else "red"
+	agent.apply_team_skin(team_id_str, agent.role)
+	
+	if mode is KothMode:
+		agent.koth_mode = true
+		agent.hill_location = mode.hill_pos
+		agent.hill_radius = mode.hill_radius
+	
+	# Conectăm moartea pentru a continua ciclul [cite: 8]
+	if mode is KothMode:
+		agent.died.connect(_on_agent_died)
 
 func on_agent_killed(agent, killer) -> void:
 	if mode and mode.has_method("on_agent_killed"):
@@ -255,3 +334,39 @@ func get_team_members(team_id: int) -> Array:
 		if t.get_team_id() == team_id:
 			return t.members
 	return []
+
+func respawn_agent(team_id: int, agent_index: int):
+	# Așteptăm 3 secunde înainte de respawn
+	await get_tree().create_timer(3.0).timeout
+	
+	if round_over or match_over: return
+
+	var agents_root := $"../AgentsRoot"
+	var teams_node := $"../Teams"
+	var team_a := teams_node.get_node("TeamA") as Team
+	var team_b := teams_node.get_node("TeamB") as Team
+	var team = team_a if team_id == 0 else team_b
+
+	# Creăm agentul nou
+	var agent := agent_scene.instantiate() as Agent
+	agents_root.add_child(agent)
+	agent.map = map
+	
+	# Îl adăugăm în echipă [cite: 5, 6]
+	team.add_member(agent, 1)
+	
+	# Poziționăm agentul la spawn-ul corespunzător [cite: 5, 6]
+	agent.global_position = map.get_spawn_global(team_id, agent_index)
+	
+	# Aplicăm skin-ul și setăm modul KOTH [cite: 1, 2, 5, 6]
+	var team_id_str = "blue" if team_id == 0 else "red"
+	agent.apply_team_skin(team_id_str, agent.role)
+	
+	# Re-inițializăm setările de KOTH pentru agentul nou
+	if mode is KothMode:
+		agent.koth_mode = true
+		agent.hill_location = mode.hill_pos
+		agent.hill_radius = mode.hill_radius
+
+	# Reconectăm semnalul de moarte
+	agent.died.connect(_on_agent_died)

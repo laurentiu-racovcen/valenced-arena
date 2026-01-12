@@ -15,6 +15,9 @@ func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	set_physics_process(true)
 
+
+var _respawn_mutex: Mutex = Mutex.new()
+
 func _physics_process(delta: float) -> void:
 	if direction == Vector2.ZERO:
 		return
@@ -53,10 +56,9 @@ func _physics_process(delta: float) -> void:
 					continue
 		# Hit something we should stop on (enemy agent, wall, etc.)
 		if collider != null and collider is Agent:
-			# Replay bullets set shooter=null and should be visual-only.
-			# Stop on agents but do not apply damage/side effects.
-			if shooter != null and damage > 0:
-				(collider as Agent).take_damage(damage, shooter)
+			_respawn_mutex.lock()
+			(collider as Agent).take_damage(damage, shooter)
+			_respawn_mutex.unlock()
 		queue_free()
 		return
 
@@ -71,14 +73,14 @@ func _on_body_entered(body: Node) -> void:
 	if body == shooter:
 		return
 	
-	if body is Agent:
+	#if body is Agent:
 		# Ignore teammates (no friendly fire)
-		if shooter != null and (body as Agent).team != null and shooter.team != null and (body as Agent).team == shooter.team:
-			return
-		if shooter != null and damage > 0:
-			(body as Agent).take_damage(damage, shooter)
-		queue_free()
-		return
+		#if shooter != null and (body as Agent).team != null and shooter.team != null and (body as Agent).team == shooter.team:
+		#	return
+		#if shooter != null and damage > 0:
+		#	(body as Agent).take_damage(damage, shooter)
+		#queue_free()
+		#return
 
 	# Hit something else (wall, etc.)
-	queue_free()
+	#queue_free()
