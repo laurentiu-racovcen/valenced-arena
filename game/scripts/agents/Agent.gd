@@ -15,6 +15,13 @@ var role_logic: Node = null
 @export var fov_angle_deg: float = Enums.AGENT_SETTING_FOV[SettingsManager.get_agent_fov_index()]  # Field of view angle in degrees (120 = can see 60 degrees each side)
 @export var los_range: float = Enums.AGENT_SETTING_LOS[SettingsManager.get_agent_los_index()]
 @export var move_speed: float = Enums.AGENT_SETTING_SPEED[SettingsManager.get_agent_speed_index()]
+# Existing navigation variables
+
+# --- KOTH Mode Variables ---
+@export var koth_mode: bool = false
+@export var hill_location: Vector2 = Vector2.ZERO
+@export var hill_radius: float = 200.0
+var movement_locked: bool = false
 
 @onready var perception: AgentPerception = $AgentPerception
 
@@ -256,9 +263,126 @@ func _pick_unblocked_dir(preferred: Vector2, delta: float) -> Vector2:
 			return d2
 	return Vector2.ZERO
 
+#func move_towards(target_pos: Vector2, delta: float, speed_mult := 1.0, sep_dist := 60.0, sep_weight := 0.8) -> void:
+	#if movement_locked:
+		## Hard stop. No nav. No separation. No unstuck. 
+		#move_dir = Vector2.ZERO
+		#velocity = velocity.lerp(Vector2.ZERO, clamp(accel * delta, 0.0, 1.0))
+		#move_and_slide()
+		#return
+#
+	## --- KOTH OVERRIDE START ---
+	#var final_target = target_pos
+	#if koth_mode:
+		#var dist_to_hill = global_position.distance_to(hill_location)
+		#
+		## If we are inside the hill, stop moving ("freeze") 
+		## We use a small margin (0.9) to ensure we stay inside the scoring area
+		#if dist_to_hill < hill_radius * 0.9:
+			#move_dir = Vector2.ZERO
+			## Rapidly decelerate to stand still and shoot
+			#velocity = velocity.lerp(Vector2.ZERO, clamp(accel * delta * 2.0, 0.0, 1.0))
+			#move_and_slide()
+			#return 
+		#else:
+			## If outside, the hill center is our only priority
+			#final_target = hill_location
+	## --- KOTH OVERRIDE END ---
+	## 1) Compute preferred seek direction (your old behavior)
+	#var dir := get_path_dir(target_pos)
+	#var sep := get_separation_dir(sep_dist)
+	#if sep != Vector2.ZERO:
+		#dir = (dir + sep * sep_weight).normalized()
+#
+	## 2) If currently in "unstuck", override direction for a short time
+	#if _unstuck_time > 0.0:
+		#_unstuck_time -= delta
+		#if _unstuck_dir != Vector2.ZERO:
+			#dir = _unstuck_dir
+	#else:
+		## 2.5) Only do "probe + steer away" when NOT using navmesh.
+		## If navmesh is active, this probe can fight the nav-agent steering and cause oscillation/stuck.
+		#var using_nav := navigation_agent != null and navigation_ready
+		#if not using_nav:
+			#if dir != Vector2.ZERO and _is_dir_blocked(dir):
+				#var unblocked_dir = _pick_unblocked_dir(dir, delta)
+				#if unblocked_dir != Vector2.ZERO:
+					#dir = unblocked_dir
+#
+	#move_dir = dir
+#
+	## 3) Move
+	#var desired_vel := dir * move_speed * speed_mult
+	#velocity = velocity.lerp(desired_vel, clamp(accel * delta, 0.0, 1.0))
+	#move_and_slide()
+#
+	## 4) Detect lack of progress
+	#var progressed := global_position.distance_to(_last_pos)
+	#_last_pos = global_position
+#
+	#var collided := get_slide_collision_count() > 0
+	#var trying_to_move := desired_vel.length() > 1.0
+#
+	#if trying_to_move and (progressed < min_progress_px or collided):
+		#_stuck_time += delta
+	#else:
+		#_stuck_time = 0.0
+#
+	## 5) Trigger "unstuck": pick a direction away from walls (biased by wall tangent if colliding)
+	#if _stuck_time >= stuck_time_to_unstuck and _unstuck_time <= 0.0:
+		#_stuck_time = 0.0
+		#_unstuck_time = unstuck_duration
+#
+		#var base_dir: Vector2
+		#if collided:
+			## Use wall tangent to slide along the wall instead of into it
+			#var c := get_slide_collision(0)
+			#var n := c.get_normal()
+			#var t := Vector2(-n.y, n.x).normalized()
+			## Choose the tangent direction that's closer to our desired direction
+			#if t.dot(dir) < 0.0:
+				#t = -t
+			## Add some randomness so agents don't all follow the same line
+			#base_dir = t.rotated(randf_range(-0.4, 0.4))
+		#else:
+			## Not colliding but not making progress - try a direction perpendicular to current
+			#base_dir = dir.rotated(PI/2 + randf_range(-0.5, 0.5))
+			#if base_dir.length() < 0.1:
+				#base_dir = Vector2.RIGHT.rotated(randf() * TAU)  # fallback to random
+#
+		## Make sure the unstuck direction is actually clear
+		#_unstuck_dir = _pick_unblocked_dir(base_dir, delta)
+		#if _unstuck_dir == Vector2.ZERO:
+			## If we can't find a clear direction, use the base direction anyway
+			#_unstuck_dir = base_dir.normalized()
+
 func move_towards(target_pos: Vector2, delta: float, speed_mult := 1.0, sep_dist := 60.0, sep_weight := 0.8) -> void:
-	# 1) Compute preferred seek direction (your old behavior)
-	var dir := get_path_dir(target_pos)
+	if movement_locked:
+		# Hard stop. No nav. No separation. No unstuck. 
+		move_dir = Vector2.ZERO
+		velocity = velocity.lerp(Vector2.ZERO, clamp(accel * delta, 0.0, 1.0))
+		move_and_slide()
+		return
+
+	# --- KOTH OVERRIDE ---
+	var final_target = target_pos
+	if koth_mode:
+		#if koth_mode and Engine.get_frames_drawn() % 60 == 0:
+			#print(name, " is moving to hill_location: ", hill_location)
+		var dist_to_hill = global_position.distance_to(hill_location)
+		
+		# If inside the hill, stop moving and exit early 
+		if dist_to_hill < hill_radius * 0.5:
+			move_dir = Vector2.ZERO
+			velocity = velocity.lerp(Vector2.ZERO, clamp(accel * delta * 5.0, 0.0, 1.0))
+			move_and_slide()
+			return # This prevents them from moving around once inside
+		else:
+			final_target = hill_location
+	# ---------------------
+
+	# 1) Compute preferred seek direction
+	var dir := get_path_dir(final_target)
 	var sep := get_separation_dir(sep_dist)
 	if sep != Vector2.ZERO:
 		dir = (dir + sep * sep_weight).normalized()
@@ -269,8 +393,6 @@ func move_towards(target_pos: Vector2, delta: float, speed_mult := 1.0, sep_dist
 		if _unstuck_dir != Vector2.ZERO:
 			dir = _unstuck_dir
 	else:
-		# 2.5) Only do "probe + steer away" when NOT using navmesh.
-		# If navmesh is active, this probe can fight the nav-agent steering and cause oscillation/stuck.
 		var using_nav := navigation_agent != null and navigation_ready
 		if not using_nav:
 			if dir != Vector2.ZERO and _is_dir_blocked(dir):
@@ -297,34 +419,27 @@ func move_towards(target_pos: Vector2, delta: float, speed_mult := 1.0, sep_dist
 	else:
 		_stuck_time = 0.0
 
-	# 5) Trigger "unstuck": pick a direction away from walls (biased by wall tangent if colliding)
+	# 5) Trigger "unstuck" logic (implemented inline)
 	if _stuck_time >= stuck_time_to_unstuck and _unstuck_time <= 0.0:
 		_stuck_time = 0.0
 		_unstuck_time = unstuck_duration
 
 		var base_dir: Vector2
 		if collided:
-			# Use wall tangent to slide along the wall instead of into it
 			var c := get_slide_collision(0)
 			var n := c.get_normal()
 			var t := Vector2(-n.y, n.x).normalized()
-			# Choose the tangent direction that's closer to our desired direction
 			if t.dot(dir) < 0.0:
 				t = -t
-			# Add some randomness so agents don't all follow the same line
 			base_dir = t.rotated(randf_range(-0.4, 0.4))
 		else:
-			# Not colliding but not making progress - try a direction perpendicular to current
 			base_dir = dir.rotated(PI/2 + randf_range(-0.5, 0.5))
 			if base_dir.length() < 0.1:
-				base_dir = Vector2.RIGHT.rotated(randf() * TAU)  # fallback to random
+				base_dir = Vector2.RIGHT.rotated(randf() * TAU)
 
-		# Make sure the unstuck direction is actually clear
 		_unstuck_dir = _pick_unblocked_dir(base_dir, delta)
 		if _unstuck_dir == Vector2.ZERO:
-			# If we can't find a clear direction, use the base direction anyway
 			_unstuck_dir = base_dir.normalized()
-
 func get_separation_dir(min_dist: float = 50.0) -> Vector2:
 	var push: Vector2 = Vector2.ZERO
 
@@ -412,6 +527,10 @@ func take_damage(amount: int, from_agent) -> void:
 			return
 		if team != null and src.team != null and src.team == team:
 			return
+		
+		# Turn around to face attacker
+		var direction_to_attacker = (src.global_position - global_position).normalized()
+		aim_dir = direction_to_attacker
 
 	hp -= amount
 	

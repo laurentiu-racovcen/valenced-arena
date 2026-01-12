@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3 uid="uid://bh7yx0kbvdsh"]
+[gd_scene load_steps=5 format=3 uid="uid://bh7yx0kbvdsh"]
 
 [ext_resource type="PackedScene" uid="uid://dp6i3xdd0n3hb" path="res://scenes/maps/BaseMap.tscn" id="1_6sge2"]
 [ext_resource type="Texture2D" uid="uid://efrjp8basf06" path="res://assets/maps/koth.png" id="2_81cvo"]
@@ -9,6 +9,9 @@ polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3, 4, 5, 6, 7, 8),
 outlines = Array[PackedVector2Array]([PackedVector2Array(4, -2, 1918, -6, 1921, 1084, -4, 1084)])
 source_geometry_mode = 1
 source_geometry_group_name = &"Collisions"
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_81cvo"]
+radius = 155.01291
 
 [node name="BaseMap" instance=ExtResource("1_6sge2")]
 
@@ -94,3 +97,11 @@ position = Vector2(1718, 615)
 
 [node name="NavigationPath" parent="." index="3"]
 navigation_polygon = SubResource("NavigationPolygon_81cvo")
+
+[node name="Hill" type="Area2D" parent="." index="4"]
+position = Vector2(960, 523)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hill" index="0"]
+position = Vector2(-2, -11)
+shape = SubResource("CircleShape2D_81cvo")
+debug_color = Color(0.96711856, 0, 0.48310882, 0.41960785)
