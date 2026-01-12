@@ -640,6 +640,13 @@ func _try_shoot() -> void:
 	# aici avem o țintă cu LOS liber și în FOV -> tragem
 	fire_cooldown = 1.0 / fire_rate
 
+	# Replay recording: log the shot event (for visual playback).
+	if get_tree().root.has_node("Replay"):
+		var replay := get_tree().root.get_node("Replay")
+		if replay != null and replay.has_method("record_shot"):
+			var muzzle_pos: Vector2 = $Skin/Muzzle.global_position if has_node("Skin/Muzzle") else global_position
+			replay.call("record_shot", str(id if id != "" else name), muzzle_pos, fire_dir)
+
 	var bullet_scene = preload("res://scenes/bullets/Bullet.tscn")
 	var bullet = bullet_scene.instantiate() as Bullet
 

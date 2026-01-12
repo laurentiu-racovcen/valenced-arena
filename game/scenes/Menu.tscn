@@ -384,4 +384,5 @@ texture_hover = ExtResource("40_0d5s4")
 [connection signal="pressed" from="Main/PlayButton" to="Main" method="_on_play_button_pressed"]
 [connection signal="pressed" from="Main/ExitButton" to="Main" method="_on_exit_button_pressed"]
 [connection signal="pressed" from="Main/SettingsButton" to="Main" method="_on_settings_button_pressed"]
+[connection signal="pressed" from="Main/ReplayButton" to="Main" method="_on_replay_button_pressed"]
 [connection signal="pressed" from="BackButton" to="." method="_on_back_button_pressed"]
