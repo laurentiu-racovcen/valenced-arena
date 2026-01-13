@@ -6,6 +6,12 @@ extends Node
 var mode: GameModeBase = null
 var time_left: float
 @onready var map = $"../GameMap" as GameMap
+
+@export var music_survival: AudioStream
+@export var music_koth: AudioStream
+@export var music_ctf: AudioStream
+@onready var music: AudioStreamPlayer = $"../Music"
+
 signal round_ended(winning_team: int)
 signal match_ended(winning_team: int)
 
@@ -23,6 +29,8 @@ var score_hud: ScoreHUD
 func _ready():
 	# Always sync from MatchConfig at runtime (export default is evaluated early).
 	mode_type = MatchConfig.game_mode
+	
+	_play_mode_music()
 
 	time_left = float(Enums.ROUNDS_SETTING_DURATION[SettingsManager.get_rounds_duration_index()])
 	map.map_loaded.connect(_on_map_loaded)
@@ -92,6 +100,21 @@ func _init_mode() -> void:
 	if mode:
 		add_child(mode)
 		mode.setup(self)
+
+func _play_mode_music() -> void:
+	if music == null:
+		return
+
+	match mode_type:
+		Enums.GameMode.SURVIVAL:
+			music.stream = music_survival
+		Enums.GameMode.KOTH:
+			music.stream = music_koth
+		Enums.GameMode.CTF:
+			music.stream = music_ctf
+
+	if music.stream != null:
+		music.play()
 
 func _spawn_agents_and_assign_teams() -> void:
 	var agents_root := $"../AgentsRoot"

@@ -1,9 +1,10 @@
-[gd_scene load_steps=6 format=3 uid="uid://cbxmlg03fyu8e"]
+[gd_scene load_steps=7 format=3 uid="uid://cbxmlg03fyu8e"]
 
 [ext_resource type="Script" uid="uid://b13wtyyuft7v7" path="res://scripts/agents/Agent.gd" id="1_y8vf7"]
 [ext_resource type="Texture2D" uid="uid://d00k06cb8417c" path="res://assets/agents/agent_skin.png" id="2_wrp4r"]
 [ext_resource type="Script" uid="uid://475hn1oegpoi" path="res://scripts/agents/AgentPerception.gd" id="3_hdfbc"]
 [ext_resource type="Script" uid="uid://kkj5a4j1pyvk" path="res://scripts/agents/AgentComms.gd" id="4_comms"]
+[ext_resource type="AudioStream" uid="uid://cyunlroj7uyoj" path="res://assets/sounds/556 Single WAV.wav" id="5_wrp4r"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_wrp4r"]
 radius = 118.75
@@ -34,3 +35,7 @@ script = ExtResource("3_hdfbc")
 
 [node name="AgentComms" type="Node" parent="."]
 script = ExtResource("4_comms")
+
+[node name="ShootSFX" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("5_wrp4r")
+bus = &"SFX"

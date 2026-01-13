@@ -1,17 +1,23 @@
-[gd_scene load_steps=8 format=3 uid="uid://qvxqg4ympsv0"]
+[gd_scene load_steps=11 format=3 uid="uid://qvxqg4ympsv0"]
 
 [ext_resource type="Script" uid="uid://bx8mi6f5vmlrn" path="res://scripts/core/GameManager.gd" id="1_y3yhn"]
 [ext_resource type="PackedScene" uid="uid://dxoskq82w5h82" path="res://scenes/GameMap.tscn" id="2_lx5da"]
 [ext_resource type="PackedScene" uid="uid://cly1u0txt5ck0" path="res://scenes/maps/SurvivalMap.tscn" id="3_bt7kc"]
 [ext_resource type="PackedScene" uid="uid://48306k40p4j4" path="res://scenes/Team.tscn" id="3_qn3w3"]
+[ext_resource type="AudioStream" uid="uid://d1ociajsyat4p" path="res://assets/sounds/Ludum Dare 28 01.ogg" id="3_y61ah"]
 [ext_resource type="PackedScene" uid="uid://bh7yx0kbvdsh" path="res://scenes/maps/KothMap.tscn" id="4_qvw6d"]
+[ext_resource type="AudioStream" uid="uid://ccgdljy5rp0uq" path="res://assets/sounds/Ludum Dare 30 09.ogg" id="4_rh4j2"]
 [ext_resource type="Script" uid="uid://k0uf5vefakkv" path="res://scripts/stats/StatsManager.gd" id="5_qvw6d"]
 [ext_resource type="PackedScene" uid="uid://bbd4oromnp76g" path="res://scenes/maps/CtfMap.tscn" id="5_y61ah"]
+[ext_resource type="AudioStream" uid="uid://vor07icsy50i" path="res://assets/sounds/Sketchbook 2025-12-14 LOOP.ogg" id="8_bt7kc"]
 
 [node name="Match" type="Node2D"]
 
 [node name="GameManager" type="Node" parent="."]
 script = ExtResource("1_y3yhn")
+music_survival = ExtResource("8_bt7kc")
+music_koth = ExtResource("3_y61ah")
+music_ctf = ExtResource("4_rh4j2")
 
 [node name="AgentsRoot" type="Node2D" parent="."]
 
@@ -39,3 +45,7 @@ script = ExtResource("5_qvw6d")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 zoom = Vector2(0.5, 0.5)
+
+[node name="Music" type="AudioStreamPlayer" parent="."]
+autoplay = true
+bus = &"Music"

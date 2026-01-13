@@ -688,6 +688,9 @@ func _try_shoot() -> void:
 
 	bullet.global_position = $Skin/Muzzle.global_position
 	get_tree().current_scene.add_child(bullet)
+	if has_node("ShootSFX"):
+		var p := $ShootSFX as AudioStreamPlayer2D
+		p.play()
 	if debug_shooting and randf() < 0.05:
 		print("[SHOOT] %s -> %s | dir=%s" % [name, best_target.name, str(fire_dir)])
 
