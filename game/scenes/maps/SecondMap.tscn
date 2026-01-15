@@ -4,6 +4,8 @@
 [ext_resource type="Texture2D" uid="uid://n3gy1tovbhqd" path="res://assets/maps/survival2.png" id="2_acd74"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_y6815"]
+vertices = PackedVector2Array(1913.9219, 1076.9297, 9, 1065.0625, 9, 14.9296875, 1906.0703, 3.0625)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
 outlines = Array[PackedVector2Array]([PackedVector2Array(-1, 1075, 1924, 1087, 1916, -7, -1, 5)])
 source_geometry_mode = 1
 source_geometry_group_name = &"Collisions"
@@ -18,28 +20,29 @@ texture = ExtResource("2_acd74")
 [node name="Collisions" parent="." index="1" groups=["Collisions"]]
 
 [node name="T0_P0" parent="Spawns" index="0"]
-position = Vector2(278, 542)
+position = Vector2(270, 229)
 
 [node name="T0_P1" parent="Spawns" index="1"]
-position = Vector2(195, 474)
+position = Vector2(257, 183)
 
 [node name="T0_P2" parent="Spawns" index="2"]
-position = Vector2(105, 613)
+position = Vector2(211, 189)
 
 [node name="T0_P3" parent="Spawns" index="3"]
-position = Vector2(202, 542)
+position = Vector2(223, 228)
 
 [node name="T1_P0" parent="Spawns" index="4"]
-position = Vector2(1630, 540)
+position = Vector2(1613, 867)
 
 [node name="T1_P1" parent="Spawns" index="5"]
-position = Vector2(1733, 469)
+position = Vector2(1670, 874)
 
 [node name="T1_P2" parent="Spawns" index="6"]
-position = Vector2(1735, 622)
+position = Vector2(1663, 922)
 
 [node name="T1_P3" parent="Spawns" index="7"]
-position = Vector2(1805, 543)
+position = Vector2(1724, 886)
 
 [node name="NavigationPath" parent="." index="3"]
+visible = false
 navigation_polygon = SubResource("NavigationPolygon_y6815")
