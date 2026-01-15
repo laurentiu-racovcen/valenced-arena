@@ -53,28 +53,29 @@ polygon = PackedVector2Array(1002, 773, 1005, 944, 1053, 945, 1122, 892, 1133, 8
 polygon = PackedVector2Array(830, 465, 830, 583, 838, 629, 902, 674, 1020, 670, 1082, 626, 1095, 590, 1093, 558, 1091, 485, 1085, 455, 1067, 434, 1043, 413, 1022, 397, 983, 393, 909, 393, 869, 420)
 
 [node name="T0_P0" parent="Spawns" index="0"]
-position = Vector2(278, 542)
+position = Vector2(270, 229)
 
 [node name="T0_P1" parent="Spawns" index="1"]
-position = Vector2(195, 474)
+position = Vector2(257, 183)
 
 [node name="T0_P2" parent="Spawns" index="2"]
-position = Vector2(105, 613)
+position = Vector2(211, 189)
 
 [node name="T0_P3" parent="Spawns" index="3"]
-position = Vector2(202, 542)
+position = Vector2(223, 228)
 
 [node name="T1_P0" parent="Spawns" index="4"]
-position = Vector2(1630, 540)
+position = Vector2(1613, 867)
 
 [node name="T1_P1" parent="Spawns" index="5"]
-position = Vector2(1733, 469)
+position = Vector2(1670, 874)
 
 [node name="T1_P2" parent="Spawns" index="6"]
-position = Vector2(1735, 622)
+position = Vector2(1663, 922)
 
 [node name="T1_P3" parent="Spawns" index="7"]
-position = Vector2(1805, 543)
+position = Vector2(1724, 886)
 
 [node name="NavigationPath" parent="." index="3"]
+visible = false
 navigation_polygon = SubResource("NavigationPolygon_y6815")
