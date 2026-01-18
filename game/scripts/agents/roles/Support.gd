@@ -5,7 +5,7 @@ var agent: Agent
 var current_assist_target: Agent = null
 var assist_urgency: int = 0
 var last_assist_time: float = 0.0
-@export var combat_memory_time: float = 1.1
+@export var combat_memory_time: float = 3.0  # Increased to prevent "pass-by" behavior
 var _combat_target: Agent = null
 var _combat_timer: float = 0.0
 
@@ -86,41 +86,65 @@ func _physics_process(delta: float) -> void:
 		sep_dist = 75.0
 		sep_weight = 0.7
 	else:
-		# Default: stay near the tank, otherwise the leader
-		var tank := _get_tank()
-		if tank != null:
-			var d_to_tank: float = agent.global_position.distance_to(tank.global_position)
-			target_pos = tank.global_position
-			# Catch up if lagging behind
-			if d_to_tank > 320.0:
-				speed_mult = 1.2
-				sep_dist = 45.0
-				sep_weight = 0.35
-			elif d_to_tank > 180.0:
-				speed_mult = 1.05
-				sep_dist = 65.0
-				sep_weight = 0.55
-			else:
-				sep_dist = 90.0
-				sep_weight = 0.95
-		else:
-			var leader: Agent = null
-			if agent.team != null:
-				leader = agent.team.get_leader()
-			if leader != null:
-				var d_to_leader: float = agent.global_position.distance_to(leader.global_position)
-				target_pos = leader.global_position
-				if d_to_leader > 320.0:
+		# CTF MODE: Use CTF behavior target if available
+		var ctf_active = false
+		if agent.has_meta("ctf_behavior"):
+			var ctf = agent.get_meta("ctf_behavior")
+			if ctf != null and is_instance_valid(ctf) and ctf.has_method("get_ctf_target"):
+				var ctf_target = ctf.get_ctf_target()
+				if ctf_target != Vector2.ZERO and ctf_target != agent.global_position:
+					target_pos = ctf_target
+					ctf_active = true
+					speed_mult = 1.0
+					sep_dist = 80.0
+					sep_weight = 0.8
+		
+		# Default: stay near the tank, otherwise the leader (only when CTF not active)
+		if not ctf_active:
+			var tank := _get_tank()
+			if tank != null:
+				var d_to_tank: float = agent.global_position.distance_to(tank.global_position)
+				target_pos = tank.global_position
+				# Catch up if lagging behind
+				if d_to_tank > 320.0:
 					speed_mult = 1.2
 					sep_dist = 45.0
 					sep_weight = 0.35
-				elif d_to_leader > 180.0:
+				elif d_to_tank > 180.0:
 					speed_mult = 1.05
 					sep_dist = 65.0
 					sep_weight = 0.55
 				else:
 					sep_dist = 90.0
 					sep_weight = 0.95
+			else:
+				var leader: Agent = null
+				if agent.team != null:
+					leader = agent.team.get_leader()
+				if leader != null:
+					var d_to_leader: float = agent.global_position.distance_to(leader.global_position)
+					target_pos = leader.global_position
+					if d_to_leader > 320.0:
+						speed_mult = 1.2
+						sep_dist = 45.0
+						sep_weight = 0.35
+					elif d_to_leader > 180.0:
+						speed_mult = 1.05
+						sep_dist = 65.0
+						sep_weight = 0.55
+					else:
+						sep_dist = 90.0
+						sep_weight = 0.95
+				else:
+					# FALLBACK: No tank or leader, move toward enemy base
+					var enemy_team_id: int = 1 - int(agent.team.id) if agent.team else 1
+					var base_map = agent.map.current_map if agent.map else null
+					if base_map and base_map.has_method("get_team_spawn_center"):
+						target_pos = base_map.get_team_spawn_center(enemy_team_id)
+					else:
+						# Just move forward
+						var fwd: Vector2 = agent.team.forward_dir if agent.team else Vector2.RIGHT
+						target_pos = agent.global_position + fwd * 400.0
 
 	# Always move each frame
 	target_pos = agent.clamp_point_to_nav(target_pos)

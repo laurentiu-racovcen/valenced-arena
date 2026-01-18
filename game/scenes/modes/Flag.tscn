@@ -1,0 +1,30 @@
+[gd_scene load_steps=3 format=3 uid="uid://ctf_flag_scene"]
+
+[ext_resource type="Script" path="res://scripts/modes/Flag.gd" id="1_flag"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_pickup"]
+radius = 50.0
+
+[node name="Flag" type="Area2D"]
+script = ExtResource("1_flag")
+collision_layer = 0
+collision_mask = 1
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.5, 0.5)
+texture = null
+
+[node name="FlagPole" type="Polygon2D" parent="Sprite2D"]
+color = Color(0.4, 0.3, 0.2, 1)
+polygon = PackedVector2Array(-4, 0, 4, 0, 4, -80, -4, -80)
+
+[node name="FlagCloth" type="Polygon2D" parent="Sprite2D"]
+position = Vector2(0, -80)
+polygon = PackedVector2Array(0, 0, 50, 10, 45, 20, 50, 30, 0, 40)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_pickup")
+
+[node name="PickupRange" type="Sprite2D" parent="."]
+modulate = Color(1, 1, 1, 0.15)
+scale = Vector2(1.0, 1.0)

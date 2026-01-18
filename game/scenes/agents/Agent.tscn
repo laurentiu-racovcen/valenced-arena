@@ -17,7 +17,7 @@ collision_mask = 3
 script = ExtResource("1_y8vf7")
 debug_ai = true
 debug_draw_fov = true
-debug_fov_radius = 300.0
+debug_fov_radius = -1.0
 debug_fov_clip_to_walls = true
 
 [node name="Skin" type="Sprite2D" parent="."]

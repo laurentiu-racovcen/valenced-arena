@@ -2,7 +2,7 @@ extends Node
 class_name Tank
 
 var agent: Agent
-@export var combat_memory_time: float = 1.1
+@export var combat_memory_time: float = 3.0  # Increased to prevent "pass-by" behavior
 var _combat_target: Agent = null
 var _combat_timer: float = 0.0
 
@@ -70,33 +70,48 @@ func _physics_process(delta: float) -> void:
 		sep_dist = 80.0
 		sep_weight = 0.2
 	else:
-		# 2. Fără inamici → stă și el aproape de leader (rol de “bodyguard”)
-		var leader: Agent = agent.team.get_leader() if agent.team != null else null
-		if leader == null:
-			return
-
-		var fwd: Vector2 = agent.team.forward_dir
-		var right: Vector2 = Vector2(fwd.y, -fwd.x)
-		var d_to_leader: float = agent.global_position.distance_to(leader.global_position)
-
-		# Catch-up logic so Tank doesn't "camp spawn" while leader moves out.
-		if d_to_leader > 360.0:
-			target_pos = leader.global_position + fwd * 40.0
-			speed_mult = 1.25
-			# In dense spawn clusters, separation can push us backward.
-			# So reduce separation while catching up.
-			sep_dist = 50.0
-			sep_weight = 0.35
-		elif d_to_leader > 200.0:
-			target_pos = leader.global_position - fwd * 40.0 + right * 40.0
-			speed_mult = 1.05
-			sep_dist = 70.0
-			sep_weight = 0.55
-		else:
-			target_pos = leader.global_position - fwd * 80.0 + right * 60.0
-			speed_mult = 0.9
-			sep_dist = 110.0
-			sep_weight = 1.1
+		# CTF MODE: Use CTF behavior target if available
+		var ctf_active = false
+		if agent.has_meta("ctf_behavior"):
+			var ctf = agent.get_meta("ctf_behavior")
+			if ctf != null and is_instance_valid(ctf) and ctf.has_method("get_ctf_target"):
+				var ctf_target = ctf.get_ctf_target()
+				if ctf_target != Vector2.ZERO and ctf_target != agent.global_position:
+					target_pos = ctf_target
+					ctf_active = true
+					speed_mult = 1.0
+					sep_dist = 80.0
+					sep_weight = 0.8
+		
+		# Regular mode or fallback
+		if not ctf_active:
+			# 2. Fără inamici → stă și el aproape de leader (rol de “bodyguard”)
+			var leader: Agent = agent.team.get_leader() if agent.team != null else null
+			if leader == null:
+				return
+	
+			var fwd: Vector2 = agent.team.forward_dir
+			var right: Vector2 = Vector2(fwd.y, -fwd.x)
+			var d_to_leader: float = agent.global_position.distance_to(leader.global_position)
+	
+			# Catch-up logic so Tank doesn't "camp spawn" while leader moves out.
+			if d_to_leader > 360.0:
+				target_pos = leader.global_position + fwd * 40.0
+				speed_mult = 1.25
+				# In dense spawn clusters, separation can push us backward.
+				# So reduce separation while catching up.
+				sep_dist = 50.0
+				sep_weight = 0.35
+			elif d_to_leader > 200.0:
+				target_pos = leader.global_position - fwd * 40.0 + right * 40.0
+				speed_mult = 1.05
+				sep_dist = 70.0
+				sep_weight = 0.55
+			else:
+				target_pos = leader.global_position - fwd * 80.0 + right * 60.0
+				speed_mult = 0.9
+				sep_dist = 110.0
+				sep_weight = 1.1
 
 	# Clamp targets to navmesh to avoid drifting into holes/borders
 	target_pos = agent.clamp_point_to_nav(target_pos)

@@ -25,7 +25,14 @@ func get_visible_enemies() -> Array:
 			continue
 
 		var dist = agent.global_position.distance_to(other.global_position)
+		
+		# Check Line of Sight RANGE (max vision distance)
 		if dist > agent.los_range:
+			# Debug: occasionally print rejected enemies
+			if agent.debug_perception and randf() < 0.01:
+				print("[PERCEPTION] %s: Enemy %s OUT OF RANGE (dist: %.1f > los_range: %.1f)" % [
+					agent.name, other.name, dist, agent.los_range
+				])
 			continue
 		
 		# Check Field of View (FOV) - can only see enemies in front
@@ -54,6 +61,12 @@ func get_visible_enemies() -> Array:
 					agent.name, other.name, dist
 				])
 			continue
+		
+		# Debug: occasionally print when enemy IS visible
+		if agent.debug_perception and randf() < 0.01:
+			print("[PERCEPTION] %s: Enemy %s VISIBLE (dist: %.1f, los_range: %.1f)" % [
+				agent.name, other.name, dist, agent.los_range
+			])
 		
 		res.append(other)
 

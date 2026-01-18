@@ -95,11 +95,16 @@ var wall_follow_dir := Vector2.ZERO
 @export var stuck_time_to_unstuck := 0.35
 @export var min_progress_px := 2.0
 @export var unstuck_duration := 0.45
+@export var unstuck_probe_distance := 120.0  # Larger probe during unstuck to find better paths
+@export var hard_stuck_threshold := 2.0  # Emergency teleport after this many seconds of continuous stuck
+@export var max_unstuck_attempts := 4  # After this many failed attempts, trigger emergency teleport
 
 var _last_pos: Vector2
 var _stuck_time := 0.0
 var _unstuck_time := 0.0
 var _unstuck_dir := Vector2.ZERO
+var _total_stuck_time := 0.0  # Cumulative stuck time for hard stuck detection
+var _unstuck_attempts := 0  # Count consecutive unstuck attempts
 
 var roam_target: Vector2
 var roam_timer := 0.0
@@ -127,6 +132,19 @@ func _ready():
 	hp = max_hp
 	ammo = ammo_max
 	_last_pos = global_position
+	
+	# Apply agent settings from SettingsManager at runtime
+	# (The @export defaults are evaluated at parse time, not runtime)
+	var fov_idx := SettingsManager.get_agent_fov_index()
+	var los_idx := SettingsManager.get_agent_los_index()
+	var speed_idx := SettingsManager.get_agent_speed_index()
+	fov_angle_deg = Enums.AGENT_SETTING_FOV[fov_idx]
+	los_range = Enums.AGENT_SETTING_LOS[los_idx]
+	move_speed = Enums.AGENT_SETTING_SPEED[speed_idx]
+	
+	# Debug: print applied settings with indices for debugging
+	print("[Agent] %s spawned with FOV[%d]=%.1f°, LOS[%d]=%.1fpx, Speed[%d]=%.1f" % [name, fov_idx, fov_angle_deg, los_idx, los_range, speed_idx, move_speed])
+	
 	_setup_navigation()
 	_load_role_logic()
 
@@ -263,6 +281,57 @@ func _pick_unblocked_dir(preferred: Vector2, delta: float) -> Vector2:
 			return d2
 	return Vector2.ZERO
 
+## Emergency teleport when agent is hard stuck (pathological cases)
+## Finds the nearest valid navmesh point and teleports the agent there
+func _emergency_teleport_to_navmesh() -> void:
+	if not navigation_agent or not navigation_ready:
+		# No navmesh - try to just push agent away from current collision
+		if get_slide_collision_count() > 0:
+			var c := get_slide_collision(0)
+			global_position += c.get_normal() * 20.0
+		return
+	
+	var nav_map: RID = navigation_agent.get_navigation_map()
+	if nav_map == RID():
+		return
+	
+	# Find closest point on navmesh
+	var closest: Vector2 = NavigationServer2D.map_get_closest_point(nav_map, global_position)
+	
+	# Validate the point isn't the same spot or invalid
+	if closest == Vector2.ZERO and global_position.distance_to(Vector2.ZERO) > 50.0:
+		return
+	
+	var dist_to_closest := global_position.distance_to(closest)
+	
+	# Only teleport if we're actually displaced from the navmesh
+	if dist_to_closest > 5.0:
+		# Verify the destination is actually clear (raycast check)
+		if not _ray_hits_wall(closest, closest + Vector2.UP * 10.0):
+			global_position = closest
+			velocity = Vector2.ZERO
+			if debug_pathfinding:
+				print("[DESTUCK] %s: Emergency teleport! Moved %.0f px to navmesh" % [name, dist_to_closest])
+		else:
+			# Destination blocked - try a few offset positions
+			var offsets: Array[Vector2] = [Vector2(30, 0), Vector2(-30, 0), Vector2(0, 30), Vector2(0, -30)]
+			for offset: Vector2 in offsets:
+				var test_pos: Vector2 = closest + offset
+				var test_closest: Vector2 = NavigationServer2D.map_get_closest_point(nav_map, test_pos)
+				if not _ray_hits_wall(global_position, test_closest):
+					global_position = test_closest
+					velocity = Vector2.ZERO
+					if debug_pathfinding:
+						print("[DESTUCK] %s: Emergency teleport (offset)! Moved to (%0.f, %.0f)" % [name, test_closest.x, test_closest.y])
+					return
+	else:
+		# We're on navmesh but maybe colliding - push slightly toward center of nav
+		var push_dir := (closest - global_position).normalized()
+		if push_dir.length() > 0.1:
+			global_position += push_dir * 10.0
+		velocity = Vector2.ZERO
+
+
 #func move_towards(target_pos: Vector2, delta: float, speed_mult := 1.0, sep_dist := 60.0, sep_weight := 0.8) -> void:
 	#if movement_locked:
 		## Hard stop. No nav. No separation. No unstuck. 
@@ -383,9 +452,12 @@ func move_towards(target_pos: Vector2, delta: float, speed_mult := 1.0, sep_dist
 
 	# 1) Compute preferred seek direction
 	var dir := get_path_dir(final_target)
-	var sep := get_separation_dir(sep_dist)
-	if sep != Vector2.ZERO:
-		dir = (dir + sep * sep_weight).normalized()
+	
+	# Disable separation during unstuck to prevent fighting forces
+	if _unstuck_time <= 0.0:
+		var sep := get_separation_dir(sep_dist)
+		if sep != Vector2.ZERO:
+			dir = (dir + sep * sep_weight).normalized()
 
 	# 2) If currently in "unstuck", override direction for a short time
 	if _unstuck_time > 0.0:
@@ -402,8 +474,13 @@ func move_towards(target_pos: Vector2, delta: float, speed_mult := 1.0, sep_dist
 
 	move_dir = dir
 
-	# 3) Move
-	var desired_vel := dir * move_speed * speed_mult
+	# 3) Move - apply CTF speed boost when carrying flag (fast return!)
+	var final_speed_mult := speed_mult
+	if has_meta("carrying_flag") and get_meta("carrying_flag") == true:
+		# Speed BOOST instead of penalty - rush back with the flag!
+		final_speed_mult = speed_mult * 1.15
+	
+	var desired_vel := dir * move_speed * final_speed_mult
 	velocity = velocity.lerp(desired_vel, clamp(accel * delta, 0.0, 1.0))
 	move_and_slide()
 
@@ -416,13 +493,28 @@ func move_towards(target_pos: Vector2, delta: float, speed_mult := 1.0, sep_dist
 
 	if trying_to_move and (progressed < min_progress_px or collided):
 		_stuck_time += delta
+		_total_stuck_time += delta  # Track cumulative stuck time
 	else:
 		_stuck_time = 0.0
+		# Reset stuck tracking when making progress
+		if progressed >= min_progress_px * 2.0:
+			_total_stuck_time = 0.0
+			_unstuck_attempts = 0
 
-	# 5) Trigger "unstuck" logic (implemented inline)
+	# 5) Check for hard stuck - emergency teleport to navmesh
+	if _total_stuck_time >= hard_stuck_threshold or _unstuck_attempts >= max_unstuck_attempts:
+		_emergency_teleport_to_navmesh()
+		_total_stuck_time = 0.0
+		_unstuck_attempts = 0
+		_stuck_time = 0.0
+		_unstuck_time = 0.0
+		return
+
+	# 6) Trigger "unstuck" logic
 	if _stuck_time >= stuck_time_to_unstuck and _unstuck_time <= 0.0:
 		_stuck_time = 0.0
 		_unstuck_time = unstuck_duration
+		_unstuck_attempts += 1
 
 		var base_dir: Vector2
 		if collided:
@@ -437,9 +529,35 @@ func move_towards(target_pos: Vector2, delta: float, speed_mult := 1.0, sep_dist
 			if base_dir.length() < 0.1:
 				base_dir = Vector2.RIGHT.rotated(randf() * TAU)
 
+		# Use larger probe distance during unstuck for better path finding
+		var old_probe := avoid_probe
+		avoid_probe = unstuck_probe_distance
 		_unstuck_dir = _pick_unblocked_dir(base_dir, delta)
+		avoid_probe = old_probe
+		
+		# IMPROVED: Instead of using blocked direction, back off or try opposite direction
 		if _unstuck_dir == Vector2.ZERO:
-			_unstuck_dir = base_dir.normalized()
+			# First try backing up (opposite of desired direction)
+			var backup_dir := -dir.normalized()
+			if not _is_dir_blocked(backup_dir):
+				_unstuck_dir = backup_dir
+			else:
+				# Try pure collision normal (push away from wall)
+				if collided:
+					var c := get_slide_collision(0)
+					_unstuck_dir = c.get_normal().normalized()
+				else:
+					# Last resort: random direction (better than pushing into wall)
+					for _i in range(8):
+						var random_dir := Vector2.RIGHT.rotated(randf() * TAU)
+						if not _is_dir_blocked(random_dir):
+							_unstuck_dir = random_dir
+							break
+					# If all else fails, stay still rather than push into wall
+					if _unstuck_dir == Vector2.ZERO:
+						_unstuck_dir = Vector2.ZERO
+						_unstuck_time = 0.1  # Short pause
+
 func get_separation_dir(min_dist: float = 50.0) -> Vector2:
 	var push: Vector2 = Vector2.ZERO
 
@@ -641,6 +759,12 @@ func _try_shoot() -> void:
 			continue
 
 		var d := enemy.global_position.distance_to(global_position)
+		
+		# Double-check range (perception should filter, but be safe)
+		if d > los_range:
+			print("[SHOOT-DEBUG] %s SKIPPED %s: dist=%.0f > los_range=%.0f" % [name, enemy.name, d, los_range])
+			continue
+		
 		if d < best_dist:
 			best_dist = d
 			best_target = enemy
@@ -667,6 +791,12 @@ func _try_shoot() -> void:
 			print("[SHOOT] %s: HOLD (friendly in line) -> %s" % [name, best_target.name])
 		return
 
+	# DEBUG: Print EVERY shot with distance and los_range
+	print("[SHOOT-DEBUG] %s FIRING at %s: dist=%.0f, los_range=%.0f (should fire: %s)" % [
+		name, best_target.name, best_dist, los_range, 
+		"YES" if best_dist <= los_range else "NO - BUG!"
+	])
+
 	# aici avem o țintă cu LOS liber și în FOV -> tragem
 	fire_cooldown = 1.0 / fire_rate
 
@@ -691,8 +821,6 @@ func _try_shoot() -> void:
 	if has_node("ShootSFX"):
 		var p := $ShootSFX as AudioStreamPlayer2D
 		p.play()
-	if debug_shooting and randf() < 0.05:
-		print("[SHOOT] %s -> %s | dir=%s" % [name, best_target.name, str(fire_dir)])
 
 	
 func _update_poses(delta: float) -> void:

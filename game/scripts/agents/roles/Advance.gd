@@ -3,7 +3,7 @@ class_name Advance
 
 var agent: Agent
 @export var debug_advance: bool = false
-@export var combat_memory_time: float = 1.0
+@export var combat_memory_time: float = 3.0  # Increased to prevent \"pass-by\" behavior
 @export var combat_retarget_interval: float = 0.25
 @export var combat_retarget_distance: float = 80.0
 @export var combat_min_move_dist: float = 40.0
@@ -59,8 +59,25 @@ func _physics_process(delta: float) -> void:
 					return a.global_position.distance_to(agent.global_position) < b.global_position.distance_to(agent.global_position)
 			)
 			enemy = enemies[0] as Agent
-		_combat_target = enemy
-		_combat_timer = combat_memory_time
+		
+		var dist_to_enemy: float = enemy.global_position.distance_to(agent.global_position)
+		
+		# CTF MODE: Check if we should prioritize objective over combat
+		var should_skip_combat: bool = false
+		if agent.has_meta("ctf_behavior"):
+			var ctf = agent.get_meta("ctf_behavior")
+			if ctf != null and is_instance_valid(ctf) and ctf.has_method("should_prioritize_objective"):
+				# DELIVER_FLAG (state 5) = NEVER fight, just run!
+				if ctf.current_state == 5:  # DELIVER_FLAG
+					should_skip_combat = true  # Always skip combat when carrying flag
+				elif ctf.should_prioritize_objective() or (ctf.current_state == 0): # ATTACK_FLAG = 0
+					should_skip_combat = dist_to_enemy > 200.0  # Only fight if within 200px
+		
+		if not should_skip_combat:
+			_combat_target = enemy
+			_combat_timer = combat_memory_time
+		else:
+			enemy = null  # Don't enter combat, continue to objective
 	elif _combat_timer > 0.0 and _combat_target != null and is_instance_valid(_combat_target) and _combat_target.is_alive():
 		enemy = _combat_target
 
@@ -128,20 +145,20 @@ func _physics_process(delta: float) -> void:
 	else:
 		_combat_move_target = Vector2.ZERO
 		_combat_move_timer = 0.0
-		# 2. Nu vedem inamici → urmăm Leader-ul în formație
-		var leader = agent.team.get_leader()
-		if leader == null:
-			return
-
-		var index = agent.team.members.find(agent)
-
-		var fwd: Vector2 = agent.team.forward_dir
-		var right: Vector2 = Vector2(fwd.y, -fwd.x)  # perpendicular pe forward
-
-		# formație 4 oameni în fața leader-ului
-		var offset_index := float(index) - 1.5
-		target_pos = leader.global_position + fwd * 150.0 + right * offset_index * 120.0
-
+		
+		# CTF MODE: Use CTF behavior target if available
+		if agent.has_meta("ctf_behavior"):
+			var ctf = agent.get_meta("ctf_behavior")
+			if ctf != null and is_instance_valid(ctf) and ctf.has_method("get_ctf_target"):
+				target_pos = ctf.get_ctf_target()
+				# Only use CTF target if it's valid
+				if target_pos == Vector2.ZERO or target_pos == agent.global_position:
+					target_pos = _get_follow_leader_target()
+			else:
+				target_pos = _get_follow_leader_target()
+		else:
+			target_pos = _get_follow_leader_target()
+	
 	# Clamp targets to navmesh to avoid drifting into holes/borders
 	target_pos = agent.clamp_point_to_nav(target_pos)
 
@@ -154,6 +171,21 @@ func _physics_process(delta: float) -> void:
 		sep_dist = 50.0
 		sep_weight = 0.15
 	agent.move_towards(target_pos, delta, speed_mult, sep_dist, sep_weight)
+
+func _get_follow_leader_target() -> Vector2:
+	# 2. Nu vedem inamici → urmăm Leader-ul în formație
+	var leader = agent.team.get_leader()
+	if leader == null:
+		return agent.global_position
+
+	var index = agent.team.members.find(agent)
+
+	var fwd: Vector2 = agent.team.forward_dir
+	var right: Vector2 = Vector2(fwd.y, -fwd.x)  # perpendicular pe forward
+
+	# formație 4 oameni în fața leader-ului
+	var offset_index := float(index) - 1.5
+	return leader.global_position + fwd * 150.0 + right * offset_index * 120.0
 
 func on_focus_target(message: Message) -> void:
 	if message == null or message.content == null:

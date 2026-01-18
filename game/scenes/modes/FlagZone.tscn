@@ -1,0 +1,30 @@
+[gd_scene load_steps=3 format=3 uid="uid://ctf_flag_zone"]
+
+[ext_resource type="Script" path="res://scripts/modes/FlagZone.gd" id="1_zone"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_zone"]
+radius = 120.0
+
+[node name="FlagZone" type="Area2D"]
+script = ExtResource("1_zone")
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_zone")
+
+[node name="Visual" type="Sprite2D" parent="."]
+modulate = Color(0.2, 0.4, 1, 0.3)
+scale = Vector2(2.4, 2.4)
+
+[node name="ZoneCircle" type="Polygon2D" parent="Visual"]
+color = Color(1, 1, 1, 0.5)
+polygon = PackedVector2Array(50, 0, 48.9, 10.4, 45.7, 20.3, 40.5, 29.4, 33.5, 37.2, 25, 43.3, 15.5, 47.6, 5.2, 49.7, -5.2, 49.7, -15.5, 47.6, -25, 43.3, -33.5, 37.2, -40.5, 29.4, -45.7, 20.3, -48.9, 10.4, -50, 0, -48.9, -10.4, -45.7, -20.3, -40.5, -29.4, -33.5, -37.2, -25, -43.3, -15.5, -47.6, -5.2, -49.7, 5.2, -49.7, 15.5, -47.6, 25, -43.3, 33.5, -37.2, 40.5, -29.4, 45.7, -20.3, 48.9, -10.4)
+
+[node name="Label" type="Label" parent="."]
+offset_left = -40.0
+offset_top = -60.0
+offset_right = 40.0
+offset_bottom = -40.0
+horizontal_alignment = 1
+text = "CAPTURE"

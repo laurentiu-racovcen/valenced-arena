@@ -62,12 +62,21 @@ func save_settings() -> void:
 
 ## Get agent settings
 func get_agent_fov_index() -> int:
+	# Defensive check: if settings not loaded yet, return sensible default
+	if settings.is_empty() or not settings.has("agent") or not settings["agent"].has("fov_index"):
+		return 0  # Default: first FOV option (45 degrees)
 	return settings["agent"]["fov_index"]
 
 func get_agent_los_index() -> int:
+	# Defensive check: if settings not loaded yet, return sensible default
+	if settings.is_empty() or not settings.has("agent") or not settings["agent"].has("los_index"):
+		return 1  # Default: medium LOS (1200 px)
 	return settings["agent"]["los_index"]
 
 func get_agent_speed_index() -> int:
+	# Defensive check: if settings not loaded yet, return sensible default
+	if settings.is_empty() or not settings.has("agent") or not settings["agent"].has("speed_index"):
+		return 1  # Default: medium speed (200)
 	return settings["agent"]["speed_index"]
 
 ## Set agent settings
@@ -85,9 +94,15 @@ func set_agent_speed_index(index: int) -> void:
 
 ## Get round settings
 func get_rounds_duration_index() -> int:
+	# Defensive check: if settings not loaded yet, return sensible default
+	if settings.is_empty() or not settings.has("rounds") or not settings["rounds"].has("duration_index"):
+		return 0  # Default: first duration option
 	return settings["rounds"]["duration_index"]
 
 func get_rounds_number_index() -> int:
+	# Defensive check: if settings not loaded yet, return sensible default
+	if settings.is_empty() or not settings.has("rounds") or not settings["rounds"].has("number_index"):
+		return 0  # Default: first number option
 	return settings["rounds"]["number_index"]
 
 ## Set round settings

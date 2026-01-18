@@ -154,10 +154,10 @@ func _spawn_agents_and_assign_teams() -> void:
 			agent.apply_team_skin(team_id_str, agent.role)
 
 func _connect_agent_signals() -> void:
-	if mode is KothMode:
-		for a in get_all_agents():
-			if not a.is_connected("died", Callable(self, "_on_agent_died")):
-				a.connect("died", Callable(self, "_on_agent_died"))
+	# Connect died signal for all modes (Survival, KOTH, CTF)
+	for a in get_all_agents():
+		if not a.is_connected("died", Callable(self, "_on_agent_died")):
+			a.connect("died", Callable(self, "_on_agent_died"))
 
 #func _on_agent_died(agent, killer) -> void:
 	#on_agent_killed(agent, killer)
@@ -192,6 +192,8 @@ func _on_agent_died(agent: Agent, killer) -> void:
 	# Pornim timer-ul de respawn
 	if mode is KothMode:
 		get_tree().create_timer(3.0).timeout.connect(_on_respawn_timer_expired.bind(team_id))
+	elif mode is CtfMode:
+		get_tree().create_timer(5.0).timeout.connect(_on_respawn_timer_expired.bind(team_id))
 
 func _on_respawn_timer_expired(team_id: int):
 	if round_over or match_over:
@@ -208,19 +210,39 @@ func _perform_respawn(team_id: int, role_to_apply: int):
 	var agents_root := $"../AgentsRoot"
 	var teams_node := $"../Teams"
 	
+	var team = teams_node.get_node("TeamA") if team_id == 0 else teams_node.get_node("TeamB")
+	
+	# For CTF mode, always respawn with the original role
+	var actual_role := role_to_apply
+	
+	# Only check for missing roles in non-CTF modes (e.g., KOTH with promotions)
+	if not (mode is CtfMode):
+		# Check what role is actually MISSING on the team (in case of promotion)
+		var existing_roles := {}
+		for m in team.members:
+			if m != null and is_instance_valid(m) and m.is_alive():
+				existing_roles[m.role] = true
+		
+		var role_priority := [Agent.Role.LEADER, Agent.Role.TANK, Agent.Role.SUPPORT, Agent.Role.ADVANCE]
+		
+		# If the requested role already exists, find a missing one
+		if existing_roles.has(role_to_apply):
+			for r in role_priority:
+				if not existing_roles.has(r):
+					actual_role = r
+					break
+	
 	var agent = agent_scene.instantiate() as Agent
 	
-	# SETĂM ROLUL înainte de add_child [cite: 38]
-	agent.role = role_to_apply
+	# SETĂM ROLUL înainte de add_child
+	agent.role = actual_role
 	
 	agents_root.add_child(agent)
 	
-	# Forțăm încărcarea AI-ului pentru rolul nou [cite: 29, 39]
-	# Aceasta este linia critică: obligăm agentul să își schimbe logica dacă a plecat pe default
-	agent.set_role(role_to_apply) 
+	# Forțăm încărcarea AI-ului pentru rolul nou
+	agent.set_role(actual_role) 
 
 	agent.map = map
-	var team = teams_node.get_node("TeamA") if team_id == 0 else teams_node.get_node("TeamB")
 	team.add_member(agent, 1)
 	
 	# Poziționare [cite: 41]
@@ -236,13 +258,23 @@ func _perform_respawn(team_id: int, role_to_apply: int):
 		agent.hill_location = mode.hill_pos
 		agent.hill_radius = mode.hill_radius
 	
+	# CTF mode setup for respawned agent
+	if mode is CtfMode:
+		agent.set_meta("ctf_mode", true)
+		var ctf_behavior = load("res://scripts/agents/CtfBehavior.gd").new()
+		ctf_behavior.setup(agent, mode)
+		agent.add_child(ctf_behavior)
+		agent.set_meta("ctf_behavior", ctf_behavior)
+	
 	# Conectăm moartea pentru a continua ciclul [cite: 8]
-	if mode is KothMode:
+	if mode is KothMode or mode is CtfMode:
 		agent.died.connect(_on_agent_died)
 
 func on_agent_killed(agent, killer) -> void:
 	if mode and mode.has_method("on_agent_killed"):
-		mode.on_agent_killed(agent, killer)
+		# Pass null for killer if it's been freed to avoid invalid reference errors
+		var valid_killer = killer if is_instance_valid(killer) else null
+		mode.on_agent_killed(agent, valid_killer)
 
 func get_all_agents() -> Array:
 	if has_node("../AgentsRoot"):
@@ -319,6 +351,10 @@ func on_match_ended(winning_team: int) -> void:
 	if is_instance_valid(score_hud):
 		score_hud.queue_free()
 		score_hud = null
+	
+	# Cleanup mode-specific resources (e.g., CTF HUD)
+	if mode and mode.has_method("cleanup_ctf"):
+		mode.cleanup_ctf()
 
 	print("Team ", winning_team, " won!")
 	match_ended.emit(winning_team)

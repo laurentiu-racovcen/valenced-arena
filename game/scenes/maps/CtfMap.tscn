@@ -63,3 +63,9 @@ position = Vector2(1669, 453)
 
 [node name="NavigationPath" parent="." index="3"]
 navigation_polygon = SubResource("NavigationPolygon_h4qtc")
+
+[node name="BlueFlagSpawn" type="Marker2D" parent="."]
+position = Vector2(200, 540)
+
+[node name="RedFlagSpawn" type="Marker2D" parent="."]
+position = Vector2(1720, 540)

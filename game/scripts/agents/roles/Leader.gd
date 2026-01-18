@@ -16,7 +16,7 @@ var _no_contact_timer: float = 0.0
 @export var idle_roam_radius: float = 260.0       # roam locally around the enemy base
 @export var avoid_enemy_base_after_leave: float = 8.0 # time to stay away after "no-contact" leave
 @export var search_reached_dist: float = 140.0
-@export var combat_memory_time: float = 1.2
+@export var combat_memory_time: float = 3.0  # Increased to prevent "pass-by" behavior
 @export var combat_retarget_interval: float = 0.25
 @export var combat_retarget_distance: float = 90.0
 @export var combat_min_move_dist: float = 45.0
@@ -31,6 +31,11 @@ var _dbg_clamp_timer: float = 0.0
 var _avoid_enemy_base_timer: float = 0.0
 var _search_target: Vector2 = Vector2.ZERO
 var _search_stage: int = 0 # 0=TOP, 1=BOTTOM, 2=OWN_BASE
+var _returning_to_center: bool = false  # Tracks if we're committed to returning to center
+var _searching_at_center: bool = false  # Tracks if we're searching around center
+var _center_search_timer: float = 0.0
+@export var search_at_center_time: float = 4.0  # How long to search at center before going to enemy base
+@export var center_search_radius: float = 300.0  # Roaming radius around center
 var _combat_target: Agent = null
 var _combat_timer: float = 0.0
 var _combat_move_target: Vector2 = Vector2.ZERO
@@ -62,6 +67,7 @@ func _physics_process(delta: float) -> void:
 	_strafe_cd = max(_strafe_cd - delta, 0.0)
 	_focus_broadcast_timer = max(_focus_broadcast_timer - delta, 0.0)
 	_focus_timer = max(_focus_timer - delta, 0.0)
+	_center_search_timer = max(_center_search_timer - delta, 0.0)
 
 	# 1. Look for enemies
 	var enemies := agent.perception.get_visible_enemies()
@@ -73,8 +79,24 @@ func _physics_process(delta: float) -> void:
 				return a.global_position.distance_to(agent.global_position) < b.global_position.distance_to(agent.global_position)
 		)
 		enemy = enemies[0] as Agent
-		_combat_target = enemy
-		_combat_timer = combat_memory_time
+		var dist_to_enemy: float = enemy.global_position.distance_to(agent.global_position)
+		
+		# CTF MODE: Check if we should prioritize objective over combat
+		var should_skip_combat: bool = false
+		if agent.has_meta("ctf_behavior"):
+			var ctf = agent.get_meta("ctf_behavior")
+			if ctf != null and is_instance_valid(ctf) and ctf.has_method("should_prioritize_objective"):
+				# DELIVER_FLAG (state 5) = NEVER fight, just run!
+				if ctf.current_state == 5:  # DELIVER_FLAG
+					should_skip_combat = true  # Always skip combat when carrying flag
+				elif ctf.should_prioritize_objective() or (ctf.current_state == 0): # ATTACK_FLAG = 0
+					should_skip_combat = dist_to_enemy > 200.0  # Only fight if within 200px
+		
+		if not should_skip_combat:
+			_combat_target = enemy
+			_combat_timer = combat_memory_time
+		else:
+			enemy = null  # Don't enter combat, continue to objective
 	elif _combat_timer > 0.0 and _combat_target != null and is_instance_valid(_combat_target) and _combat_target.is_alive():
 		# Brief combat persistence so we don't "run past" enemies on LOS/FOV flicker.
 		enemy = _combat_target
@@ -83,6 +105,9 @@ func _physics_process(delta: float) -> void:
 	if in_combat:
 		_no_contact_timer = 0.0
 		_avoid_enemy_base_timer = 0.0
+		# Reset patrol states when entering combat - stay and fight!
+		_returning_to_center = false
+		_searching_at_center = false
 	else:
 		_no_contact_timer += delta
 
@@ -174,152 +199,100 @@ func _physics_process(delta: float) -> void:
 	else:
 		_combat_move_target = Vector2.ZERO
 		_combat_move_timer = 0.0
-		# 3. No enemies: advance toward the enemy base (spawn center).
-		# Using "forward * N" can push targets outside the navmesh and make teams stick to corners.
-		var enemy_team_id: int = 1 - int(agent.team.id)
-		var base_map := agent.map.current_map as BaseMap if agent.map else null
-		_enemy_base_center = Vector2.ZERO
-		if base_map:
-			_enemy_base_center = base_map.get_team_spawn_center(enemy_team_id)
-			target_point = _enemy_base_center
-		else:
-			# Fallback if map isn't ready for some reason
-			var fwd: Vector2 = agent.team.forward_dir
-			target_point = agent.global_position + fwd * 600.0
-
-		# If we're already at the enemy base area, roam a bit to avoid "stopping forever".
-		# IMPORTANT: do NOT pick a new random roam point every frame (causes jitter).
-		if agent.map == null or _enemy_base_center == Vector2.ZERO:
-			_in_enemy_base = false
-		else:
-			var d_to_enemy_base := agent.global_position.distance_to(_enemy_base_center)
-			# Sticky state: enter at `enemy_base_radius`, exit at `enemy_base_exit_radius`
-			if _in_enemy_base:
-				_in_enemy_base = d_to_enemy_base < enemy_base_exit_radius
-			else:
-				_in_enemy_base = d_to_enemy_base < enemy_base_radius
-
-		# If we recently left the enemy base due to no-contact, avoid immediately going back.
-		if not _in_enemy_base and _avoid_enemy_base_timer > 0.0:
-			# Keep moving toward our current search target (top/bottom/own base).
-			if _search_target == Vector2.ZERO:
-				_search_target = agent.global_position
-			target_point = _search_target
-
-			# If we reached it early, advance to the next patrol point while timer is active.
-			if agent.global_position.distance_to(_search_target) < search_reached_dist and base_map != null:
-				_search_stage = (_search_stage + 1) % 3
-				var center := base_map.get_map_center()
-				var half := base_map.get_map_half_extents()
-				var y_off := half.y * 0.65
-				match _search_stage:
-					0:
-						_search_target = center + Vector2(0.0, -y_off) # top-mid
-					1:
-						_search_target = center + Vector2(0.0,  y_off) # bottom-mid
-					2:
-						_search_target = base_map.get_team_spawn_center(int(agent.team.id)) # own base
-				target_point = _search_target
-
-		# If we previously decided to leave the enemy base, keep that decision until we actually exit.
-		if _forced_leave_base and _in_enemy_base:
-			if base_map:
-				target_point = base_map.get_map_center()
-			else:
-				target_point = agent.global_position  # safe fallback
-		elif _forced_leave_base and not _in_enemy_base:
-			_forced_leave_base = false
-
-		# If we've been in the enemy base area with no contacts for a while,
-		# force a search point away from the base (prevents "camping" forever).
-		if _in_enemy_base and not _forced_leave_base and _no_contact_timer > leave_enemy_base_after:
-			var elapsed := _no_contact_timer
-			var map_center: Vector2 = agent.global_position
-			if base_map:
-				map_center = base_map.get_map_center()
-				var half := base_map.get_map_half_extents()
-				var y_off := half.y * 0.65
-				# Start a simple patrol: TOP -> BOTTOM -> OWN_BASE, then allow going back to enemy base.
-				match _search_stage:
-					0:
-						_search_target = map_center + Vector2(0.0, -y_off)
-					1:
-						_search_target = map_center + Vector2(0.0,  y_off)
-					2:
-						_search_target = base_map.get_team_spawn_center(int(agent.team.id))
-				_search_stage = (_search_stage + 1) % 3
-				target_point = _search_target
-			else:
-				target_point = map_center
-			idle_roam_target = Vector2.ZERO
-			idle_roam_timer = 0.0
-			_forced_leave_base = true
-			_avoid_enemy_base_timer = avoid_enemy_base_after_leave
-			_no_contact_timer = 0.0 # prevent retrigger spam while we are still inside base radius
-			if debug_leader:
-				print("[LEADER] %s: Leaving enemy base after %.1fs no-contact -> search center %s" % [
-					agent.name, elapsed, str(target_point)
-				])
-		elif _in_enemy_base and not _forced_leave_base:
-			var need_new_roam: bool = idle_roam_target == Vector2.ZERO \
-				or agent.global_position.distance_to(idle_roam_target) < idle_roam_reached_dist \
-				or idle_roam_timer <= 0.0
-			if need_new_roam:
-				var old_roam := idle_roam_target
-				# Roam locally around the enemy base instead of picking a point anywhere on the map.
-				# This avoids huge “go back and forth across the map” swings.
-				idle_roam_target = _enemy_base_center + Vector2(
-					randf_range(-idle_roam_radius, idle_roam_radius),
-					randf_range(-idle_roam_radius, idle_roam_radius)
-				)
-				# Clamp immediately so we don't keep clamping the same off-nav point every frame.
-				idle_roam_target = agent.clamp_point_to_nav(idle_roam_target)
-				idle_roam_timer = idle_roam_interval
-				if debug_leader:
-					print("[LEADER] %s: New roam target %s -> %s (timer=%.1fs)" % [
-						agent.name, str(old_roam), str(idle_roam_target), idle_roam_timer
-					])
-			target_point = idle_roam_target
-
+		
+		# CTF MODE: Use CTF behavior target if available
+		var ctf_active = false
+		if agent.has_meta("ctf_behavior"):
+			var ctf = agent.get_meta("ctf_behavior")
+			if ctf != null and is_instance_valid(ctf) and ctf.has_method("get_ctf_target"):
+				var ctf_target = ctf.get_ctf_target()
+				if ctf_target != Vector2.ZERO and ctf_target != agent.global_position:
+					target_point = ctf_target
+					ctf_active = true
+		
+		# Fallback to default targeting if CTF not active
+		if not ctf_active:
+			target_point = _get_default_target()
+	
 	# Clamp targets to navmesh to avoid drifting into holes/borders
 	var unclamped := target_point
 	target_point = agent.clamp_point_to_nav(target_point)
-	# Re-apply the "keep moving in combat" nudge AFTER clamping (clamp can undo the offset).
-	if in_combat and agent.global_position.distance_to(target_point) < combat_min_move_dist and enemy != null:
-		var to_enemy2: Vector2 = enemy.global_position - agent.global_position
-		var dist2: float = to_enemy2.length()
-		var dir2: Vector2 = to_enemy2 / max(dist2, 0.001)
-		var right2: Vector2 = Vector2(-dir2.y, dir2.x)
-		var sign2: float = 1.0 if int(agent.get_instance_id()) % 2 == 0 else -1.0
-		target_point = agent.clamp_point_to_nav(target_point + right2 * sign2 * 140.0)
-	if debug_leader and unclamped.distance_to(target_point) > 10.0 and _dbg_clamp_timer <= 0.0:
-		_dbg_clamp_timer = 1.0
-		print("[LEADER] %s: Target clamped %s -> %s (delta=%.1f)" % [
-			agent.name, str(unclamped), str(target_point), unclamped.distance_to(target_point)
-		])
-
-	# Periodic status (low spam)
-	if debug_leader and _dbg_timer <= 0.0:
-		_dbg_timer = 1.0
-		var mode: String = "COMBAT" if in_combat else ("ROAM" if _in_enemy_base else "ADVANCE")
-		print("[LEADER] %s: mode=%s | pos=%s | target=%s | dist=%.1f | visible_enemies=%d | in_enemy_base=%s | no_contact=%.1f/%.1f | enemy_base=%s" % [
-			agent.name, mode, str(agent.global_position), str(target_point),
-			agent.global_position.distance_to(target_point), enemies.size()
-			, "YES" if _in_enemy_base else "NO"
-			, _no_contact_timer, leave_enemy_base_after
-			, str(_enemy_base_center)
-		])
-
-	# 4. Move toward target using pathfinding (computed inside move_towards)
+	
+	# Move toward target using pathfinding
 	var speed_mult := 1.0
 	var sep_dist := 85.0
 	var sep_weight := 1.0
 	if in_combat:
-		# During combat, reduce separation (it repels from enemies too) so we commit to the fight.
 		speed_mult = 1.05
 		sep_dist = 60.0
 		sep_weight = 0.2
 	agent.move_towards(target_point, delta, speed_mult, sep_dist, sep_weight)
+
+func _get_default_target() -> Vector2:
+	# 3. No enemies: advance toward the enemy base (spawn center).
+	# Using "forward * N" can push targets outside the navmesh and make teams stick to corners.
+	var enemy_team_id: int = 1 - int(agent.team.id)
+	var own_team_id: int = int(agent.team.id)
+	var base_map := agent.map.current_map as BaseMap if agent.map else null
+	_enemy_base_center = Vector2.ZERO
+	if base_map:
+		_enemy_base_center = base_map.get_team_spawn_center(enemy_team_id)
+		var own_base_center: Vector2 = base_map.get_team_spawn_center(own_team_id)
+		var map_center: Vector2 = (own_base_center + _enemy_base_center) * 0.5
+		
+		# Check if we're already at the enemy base (use large radius to catch agents near spawn)
+		var dist_to_enemy_base: float = agent.global_position.distance_to(_enemy_base_center)
+		var dist_to_center: float = agent.global_position.distance_to(map_center)
+		
+		# If we're returning to center, stay committed until we reach it
+		if _returning_to_center:
+			if dist_to_center < 200.0:
+				# Reached center, start searching around center
+				_returning_to_center = false
+				_searching_at_center = true
+				_center_search_timer = search_at_center_time
+				if debug_leader:
+					print("[LEADER] %s reached center, searching for %.1fs" % [agent.name, search_at_center_time])
+			else:
+				# Still heading to center
+				return map_center
+		
+		# If searching at center, roam around looking for enemies
+		if _searching_at_center:
+			if _center_search_timer <= 0.0:
+				# Done searching, push to enemy base
+				_searching_at_center = false
+				if debug_leader:
+					print("[LEADER] %s done searching, pushing to enemy base" % agent.name)
+			else:
+				# Roam around center
+				if idle_roam_timer <= 0.0 or agent.global_position.distance_to(idle_roam_target) < idle_roam_reached_dist:
+					idle_roam_timer = idle_roam_interval
+					var angle: float = randf() * TAU
+					idle_roam_target = map_center + Vector2(cos(angle), sin(angle)) * center_search_radius
+					idle_roam_target = agent.clamp_point_to_nav(idle_roam_target)
+					if debug_leader:
+						print("[LEADER] %s searching center, roaming to %s" % [agent.name, str(idle_roam_target)])
+				return idle_roam_target
+		
+		# If we're close to enemy base but no enemies, start returning to center
+		# Using 400px radius to ensure we catch agents who are "at" the enemy spawn area
+		if dist_to_enemy_base < 400.0:
+			_returning_to_center = true
+			if debug_leader and randf() < 0.05:
+				print("[LEADER] %s at enemy base (dist=%.0f), returning to center" % [agent.name, dist_to_enemy_base])
+			return map_center
+		
+		# Debug: print target occasionally to diagnose survival mode issues
+		if debug_leader and randf() < 0.01:
+			print("[LEADER] %s _get_default_target -> enemy_base_center=%s (enemy_team=%d)" % [agent.name, str(_enemy_base_center), enemy_team_id])
+		return _enemy_base_center
+	else:
+		# Fallback if map isn't ready for some reason
+		var fwd: Vector2 = agent.team.forward_dir
+		if debug_leader:
+			print("[LEADER] %s _get_default_target -> FALLBACK forward*600" % agent.name)
+		return agent.global_position + fwd * 600.0
 
 func on_focus_target(message: Message) -> void:
 	# Leaders can optionally use focus too, but primarily they broadcast it.
