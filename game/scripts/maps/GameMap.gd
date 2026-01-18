@@ -26,11 +26,18 @@ func load_mode(mode: Enums.GameMode) -> void:
 		current_map.queue_free()
 		current_map = null
 
-	var chosen: PackedScene = {
-		Enums.GameMode.SURVIVAL: survival_map,
-		Enums.GameMode.KOTH: koth_map,
-		Enums.GameMode.CTF: ctf_map,
-	}.get(mode)
+	var chosen: PackedScene = null
+	
+	# Check if a specific map was selected (e.g., from map selection menu)
+	if MatchConfig.selected_map != "":
+		chosen = load(MatchConfig.selected_map) as PackedScene
+	else:
+		# Use default map for the mode
+		chosen = {
+			Enums.GameMode.SURVIVAL: survival_map,
+			Enums.GameMode.KOTH: koth_map,
+			Enums.GameMode.CTF: ctf_map,
+		}.get(mode)
 
 	if chosen == null:
 		push_error("No map PackedScene set for mode")

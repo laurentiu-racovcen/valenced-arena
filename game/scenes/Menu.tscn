@@ -1,4 +1,4 @@
-[gd_scene load_steps=41 format=3 uid="uid://hwvtkrtxlkbg"]
+[gd_scene load_steps=45 format=3 uid="uid://hwvtkrtxlkbg"]
 
 [ext_resource type="Script" uid="uid://ccvjhf3e6afnt" path="res://scripts/ui/menus/MenuManager.gd" id="1_6c8sk"]
 [ext_resource type="Texture2D" uid="uid://cajq3afc6wimj" path="res://assets/menu/bg.png" id="2_5p0sf"]
@@ -40,6 +40,10 @@
 [ext_resource type="Texture2D" uid="uid://hxgygcw3o5bd" path="res://assets/menu/hover/initial-menu/button_settings.png" id="31_22i10"]
 [ext_resource type="Texture2D" uid="uid://bvngkmxln8tty" path="res://assets/menu/hover/initial-menu/button_replay.png" id="33_gwo1h"]
 [ext_resource type="Texture2D" uid="uid://c8846fg3eqoex" path="res://assets/menu/hover/common/buttons/back.png" id="40_0d5s4"]
+[ext_resource type="Script" uid="uid://bgu07h2ds5mt8" path="res://scripts/ui/menus/MapSelect.gd" id="MapSelect_script"]
+[ext_resource type="Texture2D" uid="uid://dlvxg1mf2svnu" path="res://assets/menu/normal/map-select/map_frame.png" id="map_frame_tex"]
+[ext_resource type="Texture2D" uid="uid://27inmm0jjftn" path="res://assets/menu/normal/map-select/menu_title.png" id="map_title_tex"]
+[ext_resource type="Texture2D" uid="uid://cq3qnooedgb68" path="res://assets/maps/survival.png" id="survival_map_tex"]
 
 [node name="MenuManager" type="Control"]
 layout_mode = 3
@@ -296,6 +300,78 @@ offset_bottom = 365.0
 texture = ExtResource("10_yvxia")
 expand_mode = 1
 
+[node name="MapSelect" type="Control" parent="."]
+visible = false
+anchors_preset = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+script = ExtResource("MapSelect_script")
+
+[node name="Title" type="TextureRect" parent="MapSelect"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 550.99994
+offset_top = 84.0
+offset_right = 1377.0
+offset_bottom = 280.0
+texture = ExtResource("map_title_tex")
+expand_mode = 1
+
+[node name="MapPreview" type="TextureRect" parent="MapSelect"]
+layout_mode = 1
+offset_left = 590.0
+offset_top = 355.0
+offset_right = 1330.0
+offset_bottom = 685.0
+texture = ExtResource("survival_map_tex")
+expand_mode = 1
+
+[node name="MapFrame" type="TextureRect" parent="MapSelect"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 560.0
+offset_top = 320.0
+offset_right = 1360.0
+offset_bottom = 720.0
+texture = ExtResource("map_frame_tex")
+expand_mode = 1
+
+[node name="LeftArrow" type="TextureButton" parent="MapSelect"]
+layout_mode = 0
+offset_left = 380.0
+offset_top = 420.0
+offset_right = 520.0
+offset_bottom = 560.0
+texture_normal = ExtResource("4_l3wcu")
+texture_hover = ExtResource("17_ksyst")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="RightArrow" type="TextureButton" parent="MapSelect"]
+layout_mode = 0
+offset_left = 1400.0
+offset_top = 420.0
+offset_right = 1540.0
+offset_bottom = 560.0
+texture_normal = ExtResource("5_i7htd")
+texture_hover = ExtResource("19_27abv")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="StartButton" type="TextureButton" parent="MapSelect"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 757.0
+offset_top = 760.0
+offset_right = 1163.0
+offset_bottom = 981.0
+grow_horizontal = 2
+grow_vertical = 2
+texture_normal = ExtResource("6_dek3k")
+texture_hover = ExtResource("25_27abv")
+ignore_texture_size = true
+stretch_mode = 0
+
 [node name="Main" type="Control" parent="."]
 anchors_preset = 0
 offset_right = 1920.0
@@ -381,6 +457,9 @@ texture_hover = ExtResource("40_0d5s4")
 [connection signal="pressed" from="Gamemode/LeftArrow" to="Gamemode" method="_on_left_arrow_pressed"]
 [connection signal="pressed" from="Gamemode/RightArrow" to="Gamemode" method="_on_right_arrow_pressed"]
 [connection signal="pressed" from="Gamemode/StartButton" to="Gamemode" method="_on_start_button_pressed"]
+[connection signal="pressed" from="MapSelect/LeftArrow" to="MapSelect" method="_on_left_arrow_pressed"]
+[connection signal="pressed" from="MapSelect/RightArrow" to="MapSelect" method="_on_right_arrow_pressed"]
+[connection signal="pressed" from="MapSelect/StartButton" to="MapSelect" method="_on_start_button_pressed"]
 [connection signal="pressed" from="Main/PlayButton" to="Main" method="_on_play_button_pressed"]
 [connection signal="pressed" from="Main/ExitButton" to="Main" method="_on_exit_button_pressed"]
 [connection signal="pressed" from="Main/SettingsButton" to="Main" method="_on_settings_button_pressed"]

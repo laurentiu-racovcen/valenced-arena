@@ -11,6 +11,7 @@ const SETTINGS_IDS := [
 @onready var menus := {
 	"main": $Main,
 	"gamemode": $Gamemode,
+	"mapselect": $MapSelect,
 	"selector_settings": $Settings/Selector,
 	"round_settings": $Settings/Round,
 	"agent_settings": $Settings/Agent,
