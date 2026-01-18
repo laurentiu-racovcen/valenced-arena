@@ -3,15 +3,19 @@ extends Control
 @onready var map_display: TextureRect = $MapPreview
 @onready var title_display: TextureRect = $Title
 
-# Map thumbnails for survival mode (can be extended for other modes)
+# Map thumbnails for survival mode (with frame already included)
 const SURVIVAL_MAP_TEXTURES := [
-	preload("res://assets/maps/survival.png"),
-	preload("res://assets/maps/survival2.png"),
+	preload("res://assets/menu/normal/map-select/map1.png"),
+	preload("res://assets/menu/normal/map-select/map2.png"),
+	preload("res://assets/menu/normal/map-select/map3.png"),
+	preload("res://assets/menu/normal/map-select/map4.png"),
 ]
 
 # Map scene paths corresponding to textures
 const SURVIVAL_MAP_SCENES := [
 	"res://scenes/maps/SurvivalMap.tscn",
+	"res://scenes/maps/KothMap.tscn",
+	"res://scenes/maps/CtfMap.tscn",
 	"res://scenes/maps/SecondMap.tscn",
 ]
 

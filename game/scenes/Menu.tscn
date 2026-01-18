@@ -1,4 +1,4 @@
-[gd_scene load_steps=45 format=3 uid="uid://hwvtkrtxlkbg"]
+[gd_scene load_steps=43 format=3 uid="uid://hwvtkrtxlkbg"]
 
 [ext_resource type="Script" uid="uid://ccvjhf3e6afnt" path="res://scripts/ui/menus/MenuManager.gd" id="1_6c8sk"]
 [ext_resource type="Texture2D" uid="uid://cajq3afc6wimj" path="res://assets/menu/bg.png" id="2_5p0sf"]
@@ -41,9 +41,7 @@
 [ext_resource type="Texture2D" uid="uid://bvngkmxln8tty" path="res://assets/menu/hover/initial-menu/button_replay.png" id="33_gwo1h"]
 [ext_resource type="Texture2D" uid="uid://c8846fg3eqoex" path="res://assets/menu/hover/common/buttons/back.png" id="40_0d5s4"]
 [ext_resource type="Script" uid="uid://bgu07h2ds5mt8" path="res://scripts/ui/menus/MapSelect.gd" id="MapSelect_script"]
-[ext_resource type="Texture2D" uid="uid://dlvxg1mf2svnu" path="res://assets/menu/normal/map-select/map_frame.png" id="map_frame_tex"]
 [ext_resource type="Texture2D" uid="uid://27inmm0jjftn" path="res://assets/menu/normal/map-select/menu_title.png" id="map_title_tex"]
-[ext_resource type="Texture2D" uid="uid://cq3qnooedgb68" path="res://assets/maps/survival.png" id="survival_map_tex"]
 
 [node name="MenuManager" type="Control"]
 layout_mode = 3
@@ -319,21 +317,11 @@ expand_mode = 1
 
 [node name="MapPreview" type="TextureRect" parent="MapSelect"]
 layout_mode = 1
-offset_left = 590.0
-offset_top = 355.0
-offset_right = 1330.0
-offset_bottom = 685.0
-texture = ExtResource("survival_map_tex")
-expand_mode = 1
-
-[node name="MapFrame" type="TextureRect" parent="MapSelect"]
-layout_mode = 1
 anchors_preset = -1
 offset_left = 560.0
 offset_top = 320.0
 offset_right = 1360.0
 offset_bottom = 720.0
-texture = ExtResource("map_frame_tex")
 expand_mode = 1
 
 [node name="LeftArrow" type="TextureButton" parent="MapSelect"]
