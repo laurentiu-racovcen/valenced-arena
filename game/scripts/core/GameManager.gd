@@ -191,7 +191,7 @@ func _on_agent_died(agent: Agent, killer) -> void:
 	
 	# Pornim timer-ul de respawn
 	if mode is KothMode:
-		get_tree().create_timer(3.0).timeout.connect(_on_respawn_timer_expired.bind(team_id))
+		get_tree().create_timer(5.0).timeout.connect(_on_respawn_timer_expired.bind(team_id))
 	elif mode is CtfMode:
 		get_tree().create_timer(5.0).timeout.connect(_on_respawn_timer_expired.bind(team_id))
 

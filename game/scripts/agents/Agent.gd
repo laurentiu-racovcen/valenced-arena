@@ -695,10 +695,19 @@ func take_damage(amount: int, from_agent) -> void:
 	
 	if hp <= 0:
 		_is_dying = true
+		
+		# Record overkill damage
+		var overkill_amount: int = abs(hp) as int  # hp is negative, so this is the overkill
+		if overkill_amount > 0 and stats != null:
+			var attacker: Agent = null
+			if is_instance_valid(from_agent) and from_agent is Agent:
+				attacker = from_agent as Agent
+			stats.record_overkill(self, overkill_amount, attacker)
+		
 		if team:
 			team.remove_member(self)
 		
-		died.emit(self, from_agent) # [cite: 8]
+		died.emit(self, from_agent)
 		queue_free()
 func _has_friendly_in_line_of_fire(target: Agent) -> bool:
 	# Returns true if a teammate is the first agent hit along the shot line.
@@ -818,6 +827,12 @@ func _try_shoot() -> void:
 
 	bullet.global_position = $Skin/Muzzle.global_position
 	get_tree().current_scene.add_child(bullet)
+	
+	# Record shot for stats
+	var stats := get_tree().current_scene.get_node_or_null("StatsManager") as StatsManager
+	if stats != null:
+		stats.record_shot(self)
+	
 	if has_node("ShootSFX"):
 		var p := $ShootSFX as AudioStreamPlayer2D
 		p.play()
@@ -847,6 +862,11 @@ func _physics_process(delta: float) -> void:
 		aim_dir = move_dir.normalized()
 
 	_update_poses(delta)
+
+	# Track distance traveled for stats
+	var stats := get_tree().current_scene.get_node_or_null("StatsManager") as StatsManager
+	if stats != null:
+		stats.update_agent_position(self)
 
 	fire_cooldown -= delta
 	if fire_cooldown <= 0.0:
