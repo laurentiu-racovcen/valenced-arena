@@ -127,13 +127,13 @@ func print_summary() -> void:
 	print("║  ✓ Passed:       %-43d ║" % passed_tests)
 	print("║  ✗ Failed:       %-43d ║" % failed_tests)
 	print("║  ⊘ Skipped:      %-43d ║" % skipped_tests)
-	print("║  Duration:       %-40s ║" % ("%.3f seconds" % elapsed))
+	print("║  Duration:       %-40s    ║" % ("%.3f seconds" % elapsed))
 	
 	# Pass rate
 	var pass_rate = 0.0
 	if total_tests > 0:
 		pass_rate = (float(passed_tests) / float(total_tests)) * 100.0
-	print("║  Pass Rate:      %-40s ║" % ("%.1f%%" % pass_rate))
+	print("║  Pass Rate:      %-40s    ║" % ("%.1f%%" % pass_rate))
 	
 	print("╠══════════════════════════════════════════════════════════════╣")
 	
@@ -141,7 +141,7 @@ func print_summary() -> void:
 	if failed_tests == 0:
 		print("║                    ✓ ALL TESTS PASSED                        ║")
 	else:
-		print("║                    ✗ SOME TESTS FAILED                        ║")
+		print("║                    ✗ SOME TESTS FAILED                       ║")
 		print("╠══════════════════════════════════════════════════════════════╣")
 		print("║ Failed Tests:                                                ║")
 		for failure in failed_details:
