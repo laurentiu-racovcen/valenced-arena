@@ -11,6 +11,8 @@ func _ready():
 	# Ensure id is initialized before using it.
 	id = get_team_id()
 	forward_dir = Vector2.RIGHT if id == 0 else Vector2.LEFT
+	# Apply communication mode from settings
+	_apply_communication_mode()
 
 const ROLE_ORDER = [
 	Agent.Role.LEADER,
@@ -88,3 +90,41 @@ func remove_member(agent: Agent):
 
 func _on_team_members_changed() -> void:
 	_ensure_leader_exists()
+
+## Apply communication mode from settings
+func _apply_communication_mode() -> void:
+	var enabled_index = SettingsManager.get_comms_enabled_index()
+	var type_index = SettingsManager.get_comm_type_index()
+	
+	var mode_type: CommunicationMode.Type
+	var params: Dictionary = {}
+	
+	match enabled_index:
+		0:  # Full communication
+			mode_type = CommunicationMode.Type.UNLIMITED
+		1:  # Partial - use selected type
+			match type_index:
+				0:  # LIMITED_DISTANCE
+					mode_type = CommunicationMode.Type.LIMITED_DISTANCE
+					params["max_distance"] = 300.0
+				1:  # LIMITED_TIME
+					mode_type = CommunicationMode.Type.LIMITED_TIME
+					params["cooldown"] = 1.0
+				2:  # HUB_TOPOLOGY
+					mode_type = CommunicationMode.Type.HUB_TOPOLOGY
+				3:  # RING_TOPOLOGY
+					mode_type = CommunicationMode.Type.RING_TOPOLOGY
+				4:  # NEAREST_NEIGHBORS
+					mode_type = CommunicationMode.Type.NEAREST_NEIGHBORS
+					params["neighbor_count"] = 2
+				_:
+					mode_type = CommunicationMode.Type.LIMITED_DISTANCE
+					params["max_distance"] = 300.0
+		2:  # No communication
+			mode_type = CommunicationMode.Type.NONE
+		_:
+			mode_type = CommunicationMode.Type.UNLIMITED
+	
+	var comm_mode = CommunicationMode.new(mode_type, params)
+	comms.set_mode(comm_mode)
+	print("[Team %s] Communication mode set to: %s" % [teamName, comm_mode])

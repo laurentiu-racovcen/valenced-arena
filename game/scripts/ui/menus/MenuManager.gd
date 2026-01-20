@@ -6,6 +6,7 @@ const SETTINGS_IDS := [
 	"selector_settings",
 	"round_settings",
 	"agent_settings",
+	"comms_settings",
 ]
 
 @onready var menus := {
@@ -15,6 +16,7 @@ const SETTINGS_IDS := [
 	"selector_settings": $Settings/Selector,
 	"round_settings": $Settings/Round,
 	"agent_settings": $Settings/Agent,
+	"comms_settings": $Settings/Comms,
 }
 
 var menu_stack: Array[StringName] = []

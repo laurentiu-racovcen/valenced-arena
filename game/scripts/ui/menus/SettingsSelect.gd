@@ -6,11 +6,13 @@ extends Control
 const SECTION_TEXTURES = [
 	preload("res://assets/menu/normal/settings/sections-selector/button_rounds.png"),
 	preload("res://assets/menu/normal/settings/sections-selector/button_agents.png"),
+	preload("res://assets/menu/normal/settings/section-comms/comms.png"),
 ]
 
 @onready var sections = [
 	"round_settings",
 	"agent_settings",
+	"comms_settings",
 ]
 
 var current_section_index: int = 0

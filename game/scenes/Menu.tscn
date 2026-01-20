@@ -1,4 +1,4 @@
-[gd_scene load_steps=43 format=3 uid="uid://hwvtkrtxlkbg"]
+[gd_scene load_steps=48 format=3 uid="uid://hwvtkrtxlkbg"]
 
 [ext_resource type="Script" uid="uid://ccvjhf3e6afnt" path="res://scripts/ui/menus/MenuManager.gd" id="1_6c8sk"]
 [ext_resource type="Texture2D" uid="uid://cajq3afc6wimj" path="res://assets/menu/bg.png" id="2_5p0sf"]
@@ -42,6 +42,11 @@
 [ext_resource type="Texture2D" uid="uid://c8846fg3eqoex" path="res://assets/menu/hover/common/buttons/back.png" id="40_0d5s4"]
 [ext_resource type="Script" uid="uid://bgu07h2ds5mt8" path="res://scripts/ui/menus/MapSelect.gd" id="MapSelect_script"]
 [ext_resource type="Texture2D" uid="uid://27inmm0jjftn" path="res://assets/menu/normal/map-select/menu_title.png" id="map_title_tex"]
+[ext_resource type="Script" path="res://scripts/ui/menus/CommsSettings.gd" id="comms_settings_script"]
+[ext_resource type="Texture2D" path="res://assets/menu/normal/settings/section-comms/full.png" id="comms_full_tex"]
+[ext_resource type="Texture2D" path="res://assets/menu/normal/settings/section-comms/partial.png" id="comms_partial_tex"]
+[ext_resource type="Texture2D" path="res://assets/menu/normal/settings/section-comms/no.png" id="comms_no_tex"]
+[ext_resource type="Texture2D" path="res://assets/menu/normal/settings/section-comms/cummunication_type.png" id="comms_type_icon_tex"]
 
 [node name="MenuManager" type="Control"]
 layout_mode = 3
@@ -175,6 +180,54 @@ offset_top = 84.0
 offset_right = 1377.0
 offset_bottom = 365.0
 texture = ExtResource("9_yvxia")
+expand_mode = 1
+
+[node name="Comms" type="Control" parent="Settings"]
+anchors_preset = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+script = ExtResource("comms_settings_script")
+
+[node name="LeftArrowEnabled" type="TextureButton" parent="Settings/Comms"]
+layout_mode = 0
+offset_left = 525.0
+offset_top = 500.0
+offset_right = 649.0
+offset_bottom = 628.0
+texture_normal = ExtResource("4_l3wcu")
+texture_hover = ExtResource("17_ksyst")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="RightArrowEnabled" type="TextureButton" parent="Settings/Comms"]
+layout_mode = 0
+offset_left = 1271.0
+offset_top = 500.0
+offset_right = 1395.0
+offset_bottom = 628.0
+texture_normal = ExtResource("5_i7htd")
+texture_hover = ExtResource("19_27abv")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="CommsEnabled" type="TextureButton" parent="Settings/Comms"]
+layout_mode = 0
+offset_left = 660.0
+offset_top = 460.0
+offset_right = 1260.0
+offset_bottom = 678.0
+texture_normal = ExtResource("comms_full_tex")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="Title" type="TextureRect" parent="Settings/Comms"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 550.99994
+offset_top = 84.0
+offset_right = 1377.0
+offset_bottom = 365.0
+texture = ExtResource("comms_type_icon_tex")
 expand_mode = 1
 
 [node name="Selector" type="Control" parent="Settings"]
@@ -439,6 +492,9 @@ texture_hover = ExtResource("40_0d5s4")
 [connection signal="pressed" from="Settings/Agent/Speed" to="Settings/Agent" method="_on_speed_pressed"]
 [connection signal="pressed" from="Settings/Round/Duration" to="Settings/Round" method="_on_duration_pressed"]
 [connection signal="pressed" from="Settings/Round/Number" to="Settings/Round" method="_on_number_pressed"]
+[connection signal="pressed" from="Settings/Comms/LeftArrowEnabled" to="Settings/Comms" method="_on_left_arrow_enabled_pressed"]
+[connection signal="pressed" from="Settings/Comms/RightArrowEnabled" to="Settings/Comms" method="_on_right_arrow_enabled_pressed"]
+[connection signal="pressed" from="Settings/Comms/CommsEnabled" to="Settings/Comms" method="_on_comms_enabled_pressed"]
 [connection signal="pressed" from="Settings/Selector/LeftArrow" to="Settings/Selector" method="_on_left_arrow_pressed"]
 [connection signal="pressed" from="Settings/Selector/RightArrow" to="Settings/Selector" method="_on_right_arrow_pressed"]
 [connection signal="pressed" from="Settings/Selector/SelectButton" to="Settings/Selector" method="_on_select_button_pressed"]

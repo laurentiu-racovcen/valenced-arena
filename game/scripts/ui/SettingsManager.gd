@@ -46,6 +46,10 @@ func load_settings() -> void:
 		"rounds": {
 			"duration_index": 0,
 			"number_index": 0
+		},
+		"comms": {
+			"enabled_index": 0,
+			"type_index": 0
 		}
 	}
 	save_settings()
@@ -112,6 +116,32 @@ func set_rounds_duration_index(index: int) -> void:
 
 func set_rounds_number_index(index: int) -> void:
 	settings["rounds"]["number_index"] = index
+	save_settings()
+
+## Get comms settings
+func get_comms_enabled_index() -> int:
+	# Defensive check: if settings not loaded yet, return sensible default
+	if settings.is_empty() or not settings.has("comms") or not settings["comms"].has("enabled_index"):
+		return 0  # Default: full communication (UNLIMITED)
+	return settings["comms"]["enabled_index"]
+
+func get_comm_type_index() -> int:
+	# Defensive check: if settings not loaded yet, return sensible default
+	if settings.is_empty() or not settings.has("comms") or not settings["comms"].has("type_index"):
+		return 0  # Default: LIMITED_DISTANCE
+	return settings["comms"]["type_index"]
+
+## Set comms settings
+func set_comms_enabled_index(index: int) -> void:
+	if not settings.has("comms"):
+		settings["comms"] = {}
+	settings["comms"]["enabled_index"] = index
+	save_settings()
+
+func set_comm_type_index(index: int) -> void:
+	if not settings.has("comms"):
+		settings["comms"] = {}
+	settings["comms"]["type_index"] = index
 	save_settings()
 
 ## Get all settings as dictionary

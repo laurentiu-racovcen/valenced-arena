@@ -7,5 +7,9 @@
   "rounds": {
 	"duration_index": 0,
 	"number_index": 0
+  },
+  "comms": {
+	"enabled_index": 0,
+	"type_index": 0
   }
 }
