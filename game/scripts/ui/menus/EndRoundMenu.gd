@@ -14,6 +14,10 @@ const MAIN_HOVER      = preload("res://assets/menu/hover/common/buttons/home.png
 @onready var rtl: RichTextLabel = $Layout/VBox/TextPanel/StatsLabel
 @onready var ui_font: FontFile = preload("res://fonts/PixelifySans-Bold.ttf")
 
+# Side stats panels
+@onready var left_stats: RichTextLabel = $LeftPanel/StatsLabel if has_node("LeftPanel/StatsLabel") else null
+@onready var right_stats: RichTextLabel = $RightPanel/StatsLabel if has_node("RightPanel/StatsLabel") else null
+
 func set_text_format():
 	rtl.text = ""
 
@@ -22,6 +26,15 @@ func set_text_format():
 	rtl.add_theme_color_override("default_color", Color("FEBDAE"))
 	rtl.add_theme_constant_override("outline_size", 10)
 	rtl.add_theme_color_override("font_outline_color", Color.BLACK)
+
+func _setup_side_panel(label: RichTextLabel, font_size: int = 24) -> void:
+	if label == null:
+		return
+	label.add_theme_font_override("normal_font", ui_font)
+	label.add_theme_font_size_override("normal_font_size", font_size)
+	label.add_theme_color_override("default_color", Color("FEBDAE"))
+	label.add_theme_constant_override("outline_size", 4)
+	label.add_theme_color_override("font_outline_color", Color.BLACK)
 
 func show_round_result(winning_team: int, score_a: int, score_b: int) -> void:
 	var winning_team_name := "No"
@@ -50,15 +63,67 @@ func show_round_stats(result: Dictionary) -> void:
 	var t0: Dictionary = team.get(0, {}) as Dictionary
 	var t1: Dictionary = team.get(1, {}) as Dictionary
 
+	# Main panel - brief summary
 	rtl.text = (
-		"[center]Round finished[/center]\n"
+		"[center]Match Finished[/center]\n"
 		+ "[center]Score: [color=%s]%d[/color] - [color=%s]%d[/color][/center]\n" % [a_col, result.get("scoreA",0), b_col, result.get("scoreB",0)]
-		+ "[center]Time: %.1fs[/center]\n" % result.get("duration_sec", 0.0)
-		+ "[center][color=%s]Blue[/color] K/D: %d/%d | DMG: %d dealt / %d taken[/center]\n" % [a_col, t0.get("kills",0), t0.get("deaths",0), t0.get("damage_dealt",0), t0.get("damage_taken",0)]
-		+ "[center][color=%s]Red[/color] K/D: %d/%d | DMG: %d dealt / %d taken[/center]" % [b_col, t1.get("kills",0), t1.get("deaths",0), t1.get("damage_dealt",0), t1.get("damage_taken",0)]
+		+ "[center]Time: %.1fs[/center]" % result.get("duration_sec", 0.0)
 	)
 
+	# Build side panel stats
+	_show_team_stats(left_stats, t0, "BLUE TEAM", a_col)
+	_show_team_stats(right_stats, t1, "RED TEAM", b_col)
+
 	get_tree().paused = true
+
+func _show_team_stats(label: RichTextLabel, stats: Dictionary, team_name: String, color: String) -> void:
+	if label == null:
+		return
+	
+	_setup_side_panel(label, 20)
+	
+	var kills: int = stats.get("kills", 0)
+	var deaths: int = stats.get("deaths", 0)
+	var assists: int = stats.get("assists", 0)
+	var damage_dealt: int = stats.get("damage_dealt", 0)
+	var damage_taken: int = stats.get("damage_taken", 0)
+	var overkill: int = stats.get("overkill", 0)
+	var bullets_fired: int = stats.get("bullets_fired", 0)
+	var dps: float = stats.get("dps", 0.0)
+	var dtps: float = stats.get("dtps", 0.0)
+	var accuracy: float = stats.get("accuracy", 0.0)
+	var avg_survival: float = stats.get("avg_survival_time", 0.0)
+	var avg_distance: float = stats.get("avg_distance", 0.0)
+	var agents_alive: int = stats.get("agents_alive", 0)
+	
+	# KDA calculation
+	var kda: float = 0.0
+	if deaths > 0:
+		kda = float(kills + assists) / float(deaths)
+	else:
+		kda = float(kills + assists)
+	
+	label.text = (
+		"[center][color=%s][b]%s[/b][/color][/center]\n" % [color, team_name]
+		+ "[center]━━━━━━━━━━━━━━[/center]\n"
+		+ "[center]K/D/A: %d / %d / %d[/center]\n" % [kills, deaths, assists]
+		+ "[center]KDA Ratio: %.2f[/center]\n" % kda
+		+ "[center]━━━━━━━━━━━━━━[/center]\n"
+		+ "[center]DPS: %.1f[/center]\n" % dps
+		+ "[center]DTPS: %.1f[/center]\n" % dtps
+		+ "[center]━━━━━━━━━━━━━━[/center]\n"
+		+ "[center]Damage Dealt: %d[/center]\n" % damage_dealt
+		+ "[center]Damage Taken: %d[/center]\n" % damage_taken
+		+ "[center]Overkill: %d[/center]\n" % overkill
+		+ "[center]━━━━━━━━━━━━━━[/center]\n"
+		+ "[center]Bullets Fired: %d[/center]\n" % bullets_fired
+		+ "[center]Accuracy: %.1f%%[/center]\n" % accuracy
+		+ "[center]━━━━━━━━━━━━━━[/center]\n"
+		+ "[center]Avg Survival: %.1fs[/center]\n" % avg_survival
+		+ "[center]Avg Distance: %.0f px[/center]\n" % avg_distance
+		+ "[center]━━━━━━━━━━━━━━[/center]\n"
+		+ "[center]Agents Alive: %d[/center]" % agents_alive
+	)
 
 func _ready() -> void:
 	# So this UI keeps working even if you pause later
@@ -82,10 +147,10 @@ func set_winner(winning_team: int) -> void:
 func _on_restart_pressed() -> void:
 	print("restart button pressed!")
 	get_tree().paused = false  # unpause
-	get_tree().change_scene_to_file("res://scenes/Match.tscn")  # main menu scene
+	get_tree().change_scene_to_file("res://scenes/Match.tscn")
 
 func _on_main_menu_pressed() -> void:
 	print("main menu button pressed!")
 	main_menu_pressed.emit()
 	get_tree().paused = false  # unpause
-	get_tree().change_scene_to_file("res://scenes/Menu.tscn")  # main menu scene
+	get_tree().change_scene_to_file("res://scenes/Menu.tscn")
