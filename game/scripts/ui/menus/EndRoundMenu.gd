@@ -64,9 +64,7 @@ func show_round_stats(result: Dictionary) -> void:
 	var t1: Dictionary = team.get(1, {}) as Dictionary
 
 	# Main panel - brief summary
-	rtl.text = (
-		"[center]Match Finished[/center]\n"
-		+ "[center]Score: [color=%s]%d[/color] - [color=%s]%d[/color][/center]\n" % [a_col, result.get("scoreA",0), b_col, result.get("scoreB",0)]
+	rtl.text = ("[center]Score: [color=%s]%d[/color] - [color=%s]%d[/color][/center]\n" % [a_col, result.get("scoreA",0), b_col, result.get("scoreB",0)]
 		+ "[center]Time: %.1fs[/center]" % result.get("duration_sec", 0.0)
 	)
 

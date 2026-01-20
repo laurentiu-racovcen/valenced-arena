@@ -27,6 +27,9 @@ var movement_locked: bool = false
 
 @onready var skin: Sprite2D = $Skin
 @onready var collision_shape: CollisionShape2D = $Collision
+@onready var health_bar_bg: ColorRect = $HealthUI/VBox/HealthBarBG if has_node("HealthUI/VBox/HealthBarBG") else null
+@onready var health_bar_fill: ColorRect = $HealthUI/VBox/HealthBarBG/HealthBarFill if has_node("HealthUI/VBox/HealthBarBG/HealthBarFill") else null
+@onready var role_label: Label = $HealthUI/VBox/RoleBG/RoleLabel if has_node("HealthUI/VBox/RoleBG/RoleLabel") else null
 
 # Navigation pathfinding
 var navigation_agent: NavigationAgent2D = null
@@ -147,6 +150,8 @@ func _ready():
 	
 	_setup_navigation()
 	_load_role_logic()
+	_update_health_ui()
+	_update_role_label()
 
 func _ray_first_non_agent_hit(from_pos: Vector2, to_pos: Vector2, extra_exclude: Array[RID] = []) -> Dictionary:
 	var space := get_world_2d().direct_space_state
@@ -622,6 +627,7 @@ func _load_role_logic():
 					role_logic.set(n, true)
 
 		print("[Agent._load_role_logic] %s loaded %s successfully!" % [name, logic_node.get_class()])
+		_update_role_label()
 	else:
 		print("[Agent._load_role_logic] %s FAILED - no logic for role %s!" % [name, Role.keys()[role]])
 
@@ -692,6 +698,8 @@ func take_damage(amount: int, from_agent) -> void:
 		if is_instance_valid(from_agent) and from_agent is Agent:
 			attacker = from_agent as Agent
 		stats.record_damage(self, amount, attacker)
+	
+	_update_health_ui()
 	
 	if hp <= 0:
 		_is_dying = true
@@ -1219,3 +1227,34 @@ func _draw() -> void:
 	for i in range(1, cone.size()):
 		arc.append(cone[i])
 	draw_polyline(arc, edge_col, debug_fov_line_width, true)
+
+# ============ HEALTH UI ============
+
+func _update_health_ui() -> void:
+	if health_bar_fill == null or health_bar_bg == null:
+		return
+	
+	# Scale the fill bar based on HP percentage
+	var health_percent: float = float(max(hp, 0)) / float(max_hp)
+	health_bar_fill.anchor_right = health_percent
+	
+	# Change color based on health percentage
+	if health_percent > 0.6:
+		health_bar_fill.color = Color(0.2, 0.8, 0.2, 1)  # Green
+	elif health_percent > 0.3:
+		health_bar_fill.color = Color(0.9, 0.7, 0.1, 1)  # Yellow
+	else:
+		health_bar_fill.color = Color(0.9, 0.2, 0.2, 1)  # Red
+
+func _update_role_label() -> void:
+	if role_label == null:
+		return
+	
+	var role_names := {
+		Role.LEADER: "LDR",
+		Role.ADVANCE: "ADV",
+		Role.TANK: "TNK",
+		Role.SUPPORT: "SUP"
+	}
+	role_label.text = role_names.get(role, "AGT")
+	# We don't color it here anymore because user wants it white (set in LabelSettings)
