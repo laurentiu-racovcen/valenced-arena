@@ -966,14 +966,28 @@ func _setup_navigation() -> void:
 				await get_tree().create_timer(0.5).timeout
 				_update_navigation_map()
 	
-	# Wait for navigation to initialize
+	# Wait for navigation map to be fully synchronized by NavigationServer
 	await get_tree().physics_frame
 	await get_tree().physics_frame
+	
+	# Ensure the navigation map has completed at least one sync cycle
+	if navigation_agent:
+		var nav_map: RID = navigation_agent.get_navigation_map()
+		if nav_map != RID():
+			# Wait until the map has been synchronized at least once
+			var max_wait_frames := 60  # Max ~1 second at 60fps
+			var waited_frames := 0
+			while NavigationServer2D.map_get_iteration_id(nav_map) == 0 and waited_frames < max_wait_frames:
+				await get_tree().physics_frame
+				waited_frames += 1
+			if debug_pathfinding:
+				print("[PATHFINDING] %s: Waited %d frames for nav map sync" % [name, waited_frames])
+	
 	navigation_ready = true
-	var nav_map = navigation_agent.get_navigation_map() if navigation_agent else null
+	var nav_map_check = navigation_agent.get_navigation_map() if navigation_agent else null
 	if debug_pathfinding:
 		print("[PATHFINDING] %s: Navigation agent ready! (nav_map: %s)" % [
-			name, "YES" if nav_map else "NO"
+			name, "YES" if nav_map_check else "NO"
 		])
 
 func _on_navigation_ready() -> void:
