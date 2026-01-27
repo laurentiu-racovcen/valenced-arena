@@ -19,7 +19,7 @@ func _process(_delta: float) -> void:
 		_update_display()
 
 func _setup_rtl():
-	rtl.size = Vector2(900, 80)
+	rtl.size = Vector2(900, 120)
 	rtl.anchor_left = 0.5
 	rtl.anchor_right = 0.5
 	rtl.anchor_top = 0.0
@@ -50,7 +50,7 @@ func _update_display() -> void:
 	
 	var a_col := "#4aa3ff"
 	var b_col := "#ff4a4a"
-	rtl.text = "[center]Score: [color=%s]%d[/color] - [color=%s]%d[/color]  |  %s[/center]" % [
+	rtl.text = "[center]Score: [color=%s]%d[/color] - [color=%s]%d[/color]\n%s[/center]" % [
 		a_col, _score_a, b_col, _score_b, time_str
 	]
 

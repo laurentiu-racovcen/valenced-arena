@@ -168,6 +168,9 @@ func _process(delta: float) -> void:
 			_record_time += _record_dt
 			_record_frame(_record_time)
 	elif _state == ReplayState.PLAYBACK:
+		# Respect pause state during playback (like normal gameplay)
+		if get_tree().paused:
+			return
 		_update_playback(delta)
 
 func _record_frame(t: float) -> void:
@@ -335,6 +338,13 @@ func _cleanup_overlay_nodes() -> void:
 		# Remove ScoreHUD (CanvasLayer named ScoreHud) and any RoundCountdown leftover.
 		if (c is CanvasLayer and (c as Node).name == "ScoreHud") or (c as Node).name == "RoundCountdown":
 			(c as Node).queue_free()
+	
+	# Also clean up any bullets in the current scene
+	var current_scene := get_tree().current_scene
+	if current_scene != null:
+		for child in current_scene.get_children():
+			if child is Bullet:
+				child.queue_free()
 
 func _set_agents_for_session(agents: Array) -> void:
 	# Backwards compatibility (should not be used by recording anymore).

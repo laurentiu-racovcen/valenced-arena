@@ -95,5 +95,26 @@ func _on_main_menu_pressed() -> void:
 	if score_hud:
 		score_hud.queue_free()
 	
+	# Cleanup RoundCountdown if present
+	var countdown = get_tree().root.get_node_or_null("RoundCountdown")
+	if countdown:
+		countdown.queue_free()
+	
+	# Stop replay playback if active and clean up bullets
+	if has_node("/root/Replay"):
+		var replay_manager = get_node("/root/Replay")
+		if replay_manager.has_method("end_recording"):
+			replay_manager.end_recording(false)  # Stop without saving
+		# Reset replay state
+		if "_state" in replay_manager:
+			replay_manager._state = 0  # ReplayState.IDLE
+	
+	# Clean up bullets from current scene
+	var current_scene = get_tree().current_scene
+	if current_scene:
+		for child in current_scene.get_children():
+			if child is Bullet:
+				child.queue_free()
+	
 	main_menu_pressed.emit()
 	get_tree().change_scene_to_file("res://scenes/Menu.tscn")
