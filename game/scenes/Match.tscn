@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://qvxqg4ympsv0"]
+[gd_scene load_steps=13 format=3 uid="uid://qvxqg4ympsv0"]
 
 [ext_resource type="Script" uid="uid://bx8mi6f5vmlrn" path="res://scripts/core/GameManager.gd" id="1_y3yhn"]
 [ext_resource type="PackedScene" uid="uid://dxoskq82w5h82" path="res://scenes/GameMap.tscn" id="2_lx5da"]
@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" uid="uid://bbd4oromnp76g" path="res://scenes/maps/CtfMap.tscn" id="5_y61ah"]
 [ext_resource type="AudioStream" uid="uid://vor07icsy50i" path="res://assets/sounds/Sketchbook 2025-12-14 LOOP.ogg" id="8_bt7kc"]
 [ext_resource type="PackedScene" uid="uid://c8nbl1jmgdika" path="res://scenes/ui/LiveStatsOverlay.tscn" id="9_stats"]
+[ext_resource type="PackedScene" uid="uid://pausemenu" path="res://scenes/PauseMenu.tscn" id="10_pause"]
 
 [node name="Match" type="Node2D"]
 
@@ -40,6 +41,8 @@ layer = 10
 
 [node name="LiveStatsOverlay" parent="UILayer" instance=ExtResource("9_stats")]
 
+[node name="PauseMenu" parent="UILayer" instance=ExtResource("10_pause")]
+
 [node name="StatsManager" type="Node" parent="."]
 script = ExtResource("5_qvw6d")
 
@@ -49,3 +52,4 @@ zoom = Vector2(0.5, 0.5)
 [node name="Music" type="AudioStreamPlayer" parent="."]
 autoplay = true
 bus = &"Music"
+
