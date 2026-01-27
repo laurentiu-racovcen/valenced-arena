@@ -1,11 +1,15 @@
-[gd_scene load_steps=8 format=3 uid="uid://pausemenu"]
+[gd_scene load_steps=12 format=3 uid="uid://ddagsdw18ossq"]
 
-[ext_resource type="Script" path="res://scripts/ui/menus/PauseMenu.gd" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://cjdpomk3m2g3g" path="res://assets/menu/normal/pause/pauseTitle.png" id="2_title"]
+[ext_resource type="Script" uid="uid://bvbxfoupsd3mf" path="res://scripts/ui/menus/PauseMenu.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://dnfgmd56sgttv" path="res://assets/menu/normal/pause/pauseTitle.png" id="2_title"]
 [ext_resource type="Texture2D" uid="uid://drwqdeywq1oxv" path="res://assets/menu/normal/common/buttons/back.png" id="3_resume"]
 [ext_resource type="Texture2D" uid="uid://c8846fg3eqoex" path="res://assets/menu/hover/common/buttons/back.png" id="4_resume_hover"]
 [ext_resource type="Texture2D" uid="uid://iqu2bk83dlsg" path="res://assets/menu/normal/common/buttons/home.png" id="5_home"]
+[ext_resource type="Texture2D" uid="uid://dk7c1hxd37hb7" path="res://assets/menu/hover/common/buttons/music_on.png" id="6_8ti4s"]
 [ext_resource type="Texture2D" uid="uid://dpp45lk4pd543" path="res://assets/menu/hover/common/buttons/home.png" id="6_home_hover"]
+[ext_resource type="Texture2D" uid="uid://bf3unjrg7ems5" path="res://assets/menu/normal/common/buttons/music_on.png" id="7_music_on"]
+[ext_resource type="Texture2D" uid="uid://dxm0icbc68wf8" path="res://assets/menu/hover/common/buttons/sound_on.png" id="8_shaba"]
+[ext_resource type="Texture2D" uid="uid://banb8wqp271pp" path="res://assets/menu/normal/common/buttons/sound_on.png" id="9_sound_on"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
 bg_color = Color(0, 0, 0, 0.7)
@@ -57,19 +61,35 @@ stretch_mode = 5
 [node name="Buttons" type="HBoxContainer" parent="VBox"]
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_constants/separation = 40
+theme_override_constants/separation = 30
 alignment = 1
 
 [node name="MainMenuButton" type="TextureButton" parent="VBox/Buttons"]
-custom_minimum_size = Vector2(120, 120)
+custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
 texture_normal = ExtResource("5_home")
 texture_hover = ExtResource("6_home_hover")
 ignore_texture_size = true
 stretch_mode = 0
 
+[node name="MusicButton" type="TextureButton" parent="VBox/Buttons"]
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
+texture_normal = ExtResource("7_music_on")
+texture_hover = ExtResource("6_8ti4s")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="SoundButton" type="TextureButton" parent="VBox/Buttons"]
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
+texture_normal = ExtResource("9_sound_on")
+texture_hover = ExtResource("8_shaba")
+ignore_texture_size = true
+stretch_mode = 0
+
 [node name="ResumeButton" type="TextureButton" parent="VBox/Buttons"]
-custom_minimum_size = Vector2(120, 120)
+custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
 texture_normal = ExtResource("3_resume")
 texture_hover = ExtResource("4_resume_hover")
