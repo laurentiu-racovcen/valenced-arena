@@ -1,0 +1,87 @@
+[gd_scene load_steps=4 format=3 uid="uid://c8nbl1jmgdika"]
+
+[ext_resource type="Script" uid="uid://dcwawxbd54vml" path="res://scripts/ui/LiveStatsOverlay.gd" id="1_script"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_left"]
+content_margin_left = 15.0
+content_margin_top = 15.0
+content_margin_right = 15.0
+content_margin_bottom = 15.0
+bg_color = Color(0.1, 0.2, 0.5, 0.75)
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_right"]
+content_margin_left = 15.0
+content_margin_top = 15.0
+content_margin_right = 15.0
+content_margin_bottom = 15.0
+bg_color = Color(0.5, 0.1, 0.1, 0.75)
+corner_radius_top_left = 15
+corner_radius_bottom_left = 15
+
+[node name="LiveStatsOverlay" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_script")
+
+[node name="LeftPanel" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 1
+offset_right = 220.0
+offset_bottom = 300.0
+size_flags_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_left")
+
+[node name="StatsLabel" type="RichTextLabel" parent="LeftPanel"]
+layout_mode = 2
+mouse_filter = 2
+bbcode_enabled = true
+text = "[b]BLUE TEAM[/b]
+Loading..."
+fit_content = true
+scroll_active = false
+
+[node name="RightPanel" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -220.0
+offset_bottom = 300.0
+grow_horizontal = 0
+size_flags_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_right")
+
+[node name="StatsLabel" type="RichTextLabel" parent="RightPanel"]
+layout_mode = 2
+mouse_filter = 2
+bbcode_enabled = true
+text = "[b]RED TEAM[/b]
+Loading..."
+fit_content = true
+scroll_active = false
+
+[node name="HintLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -100.0
+offset_top = -40.0
+offset_right = 100.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 1, 1, 0.7)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+text = "Press TAB to hide"
+horizontal_alignment = 1

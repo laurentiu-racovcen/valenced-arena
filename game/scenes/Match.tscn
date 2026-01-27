@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://qvxqg4ympsv0"]
+[gd_scene load_steps=12 format=3 uid="uid://qvxqg4ympsv0"]
 
 [ext_resource type="Script" uid="uid://bx8mi6f5vmlrn" path="res://scripts/core/GameManager.gd" id="1_y3yhn"]
 [ext_resource type="PackedScene" uid="uid://dxoskq82w5h82" path="res://scenes/GameMap.tscn" id="2_lx5da"]
@@ -10,6 +10,7 @@
 [ext_resource type="Script" uid="uid://k0uf5vefakkv" path="res://scripts/stats/StatsManager.gd" id="5_qvw6d"]
 [ext_resource type="PackedScene" uid="uid://bbd4oromnp76g" path="res://scenes/maps/CtfMap.tscn" id="5_y61ah"]
 [ext_resource type="AudioStream" uid="uid://vor07icsy50i" path="res://assets/sounds/Sketchbook 2025-12-14 LOOP.ogg" id="8_bt7kc"]
+[ext_resource type="PackedScene" uid="uid://c8nbl1jmgdika" path="res://scenes/ui/LiveStatsOverlay.tscn" id="9_stats"]
 
 [node name="Match" type="Node2D"]
 
@@ -34,11 +35,10 @@ teamName = "TeamA"
 [node name="TeamB" parent="Teams" instance=ExtResource("3_qn3w3")]
 teamName = "TeamB"
 
-[node name="UIRoot" type="Control" parent="."]
-layout_mode = 3
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
+[node name="UILayer" type="CanvasLayer" parent="."]
+layer = 10
+
+[node name="LiveStatsOverlay" parent="UILayer" instance=ExtResource("9_stats")]
 
 [node name="StatsManager" type="Node" parent="."]
 script = ExtResource("5_qvw6d")

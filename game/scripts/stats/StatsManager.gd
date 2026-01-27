@@ -215,3 +215,55 @@ func _create_team_stats() -> Dictionary:
 		"accuracy": 0.0,
 		"avg_distance": 0.0,
 	}
+
+## Returns current team statistics for real-time display
+func get_team_stats() -> Dictionary:
+	var current_time := Time.get_ticks_msec() / 1000.0
+	var duration := current_time - round_start_time
+	
+	var team := {
+		0: _create_team_stats(),
+		1: _create_team_stats(),
+	}
+	
+	for aid in per_agent.keys():
+		var s: Dictionary = per_agent[aid]
+		var tid: int = s.get("team_id", -1)
+		if not team.has(tid):
+			continue
+		
+		var t: Dictionary = team[tid]
+		t["kills"] += s.get("kills", 0)
+		t["deaths"] += s.get("deaths", 0)
+		t["assists"] += s.get("assists", 0)
+		t["damage_dealt"] += s.get("damage_dealt", 0)
+		t["damage_taken"] += s.get("damage_taken", 0)
+		t["overkill"] += s.get("overkill", 0)
+		t["bullets_fired"] += s.get("bullets_fired", 0)
+		t["bullets_hit"] += s.get("bullets_hit", 0)
+		t["distance_traveled"] += s.get("distance_traveled", 0.0)
+		
+		# For alive agents, calculate current time alive
+		if s.get("alive", false):
+			t["total_time_alive"] += duration
+			t["agents_alive"] += 1
+		else:
+			t["total_time_alive"] += s.get("time_alive", 0.0)
+		
+		t["agent_count"] += 1
+	
+	# Calculate derived stats
+	for tid in team.keys():
+		var t: Dictionary = team[tid]
+		var agent_count: int = t.get("agent_count", 1)
+		var total_time: float = t.get("total_time_alive", 1.0)
+		
+		t["dps"] = t["damage_dealt"] / max(total_time, 0.1)
+		t["dtps"] = t["damage_taken"] / max(total_time, 0.1)
+		t["avg_survival_time"] = total_time / max(agent_count, 1)
+		var bullets_fired: int = t.get("bullets_fired", 0)
+		t["accuracy"] = (float(t["bullets_hit"]) / max(bullets_fired, 1)) * 100.0
+		t["avg_distance"] = t["distance_traveled"] / max(agent_count, 1)
+		t["alive"] = t["agents_alive"]
+	
+	return team
