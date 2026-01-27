@@ -100,6 +100,11 @@ func _on_main_menu_pressed() -> void:
 	if countdown:
 		countdown.queue_free()
 	
+	# Cleanup CTF HUD if present
+	for c in get_tree().root.get_children():
+		if c is CanvasLayer and c.name.begins_with("CtfHUD"):
+			c.queue_free()
+	
 	# Stop replay playback if active and clean up bullets
 	if has_node("/root/Replay"):
 		var replay_manager = get_node("/root/Replay")
@@ -109,11 +114,13 @@ func _on_main_menu_pressed() -> void:
 		if "_state" in replay_manager:
 			replay_manager._state = 0  # ReplayState.IDLE
 	
-	# Clean up bullets from current scene
+	# Clean up bullets and flags from current scene
 	var current_scene = get_tree().current_scene
 	if current_scene:
 		for child in current_scene.get_children():
 			if child is Bullet:
+				child.queue_free()
+			if child.is_in_group("flags"):
 				child.queue_free()
 	
 	main_menu_pressed.emit()

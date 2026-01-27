@@ -53,6 +53,20 @@ func is_playback_pending() -> bool:
 func is_recording() -> bool:
 	return _state == ReplayState.RECORDING
 
+func is_playing() -> bool:
+	return _state == ReplayState.PLAYBACK
+
+func get_playback_time() -> float:
+	return _play_time
+
+func get_total_duration() -> float:
+	if _frames.is_empty():
+		return 0.0
+	return float((_frames[_frames.size() - 1] as Dictionary).get("t", 0.0))
+
+func get_mode_type() -> int:
+	return int(_data.get("mode", 0))
+
 func request_replay_last() -> void:
 	# Called from the menu replay button.
 	var loaded := _load_last()
@@ -327,23 +341,28 @@ func _exit_playback_to_menu() -> void:
 	get_tree().change_scene_to_file("res://scenes/Menu.tscn")
 
 func _cleanup_overlay_nodes() -> void:
-	# ScoreHUD is added to the root during matches; in replay playback we skip creating it,
-	# but if one exists (from previous runs), remove it before returning to menu.
+	# ScoreHUD is added to the root during matches; clean it up before returning to menu.
 	var root := get_tree().root
 	if root == null:
 		return
 	for c in root.get_children():
 		if c == null:
 			continue
-		# Remove ScoreHUD (CanvasLayer named ScoreHud) and any RoundCountdown leftover.
+		# Remove ScoreHUD (CanvasLayer named ScoreHud), RoundCountdown, and CTF HUD
 		if (c is CanvasLayer and (c as Node).name == "ScoreHud") or (c as Node).name == "RoundCountdown":
 			(c as Node).queue_free()
+		# Remove CTF HUD (it's a CanvasLayer added to root)
+		if c is CanvasLayer and (c as Node).name.begins_with("CtfHUD"):
+			(c as Node).queue_free()
 	
-	# Also clean up any bullets in the current scene
+	# Also clean up any bullets and flags in the current scene
 	var current_scene := get_tree().current_scene
 	if current_scene != null:
 		for child in current_scene.get_children():
 			if child is Bullet:
+				child.queue_free()
+			# Clean up flags
+			if child.is_in_group("flags"):
 				child.queue_free()
 
 func _set_agents_for_session(agents: Array) -> void:

@@ -12,7 +12,7 @@ var _timer: float = 0.0
 var _match_ended: bool = false
 
 func _ready() -> void:
-	visible = false  # Start hidden
+	visible = true  # Start hidden
 	# Find StatsManager and GameManager
 	await get_tree().process_frame
 	var match_node = get_tree().current_scene

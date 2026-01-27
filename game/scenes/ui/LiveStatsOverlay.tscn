@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3 uid="uid://c8nbl1jmgdika"]
+[gd_scene load_steps=5 format=3 uid="uid://c8nbl1jmgdika"]
 
 [ext_resource type="Script" uid="uid://dcwawxbd54vml" path="res://scripts/ui/LiveStatsOverlay.gd" id="1_script"]
 
@@ -19,6 +19,9 @@ content_margin_bottom = 15.0
 bg_color = Color(0.5, 0.1, 0.1, 0.75)
 corner_radius_top_left = 15
 corner_radius_bottom_left = 15
+
+[sub_resource type="FontVariation" id="FontVariation_p82ct"]
+variation_embolden = 0.89
 
 [node name="LiveStatsOverlay" type="Control"]
 layout_mode = 3
@@ -80,8 +83,12 @@ offset_top = -40.0
 offset_right = 100.0
 grow_horizontal = 2
 grow_vertical = 0
-theme_override_colors/font_color = Color(1, 1, 1, 0.7)
+theme_override_colors/font_color = Color(1, 1, 1, 0.7019608)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 3
-text = "Press TAB to hide"
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 7
+theme_override_fonts/font = SubResource("FontVariation_p82ct")
+theme_override_font_sizes/font_size = 20
+text = "Press TAB to hide stats"
 horizontal_alignment = 1

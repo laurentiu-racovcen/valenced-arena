@@ -28,8 +28,15 @@ const FLAG_SCENE = preload("res://scenes/modes/Flag.tscn")
 ## CTF HUD reference
 var ctf_hud = null
 
+## Replay mode flag - skip AI setup if true
+var _is_replay_mode: bool = false
+
 func setup(ctx) -> void:
 	super(ctx)
+	
+	# Check if we're in replay mode
+	if context.has_method("get") or "_in_replay_mode" in context:
+		_is_replay_mode = context._in_replay_mode if "_in_replay_mode" in context else false
 	
 	# Wait a frame to ensure map is fully loaded
 	await context.get_tree().process_frame
@@ -56,15 +63,17 @@ func setup(ctx) -> void:
 	# Find or create capture zones
 	_setup_capture_zones(map_instance)
 	
-	# Configure agents for CTF mode
-	_setup_agents_for_ctf()
+	# Configure agents for CTF mode (skip if in replay)
+	if not _is_replay_mode:
+		_setup_agents_for_ctf()
 	
 	# Setup CTF HUD (only once)
 	if ctf_hud == null:
 		_setup_hud()
 	
-	print("[CTF] Mode initialized! Blue flag at %s, Red flag at %s" % [
-		str(blue_flag_spawn), str(red_flag_spawn)
+	var mode_str = "REPLAY" if _is_replay_mode else "NORMAL"
+	print("[CTF] Mode initialized (%s)! Blue flag at %s, Red flag at %s" % [
+		mode_str, str(blue_flag_spawn), str(red_flag_spawn)
 	])
 
 func _cleanup_flags() -> void:

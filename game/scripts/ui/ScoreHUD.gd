@@ -6,17 +6,28 @@ class_name ScoreHUD
 
 var _score_a: int = 0
 var _score_b: int = 0
-var _match_start_time: float = 0.0
+var _elapsed_time: float = 0.0  # Current round elapsed time
+var _total_match_time: float = 0.0  # Total match time (all rounds combined)
 var _match_running: bool = true
+var _is_replay_mode: bool = false
 
 func _ready() -> void:
 	_setup_rtl()
-	_match_start_time = Time.get_ticks_msec() / 1000.0
+	_elapsed_time = 0.0
+	_total_match_time = 0.0
+	
+	# Check if we're in replay mode
+	if get_tree().root.has_node("Replay"):
+		var replay = get_tree().root.get_node("Replay")
+		if replay and replay.has_method("is_playing") and replay.call("is_playing"):
+			_is_replay_mode = true
+	
 	set_score(0, 0)
 
-func _process(_delta: float) -> void:
-	if _match_running:
-		_update_display()
+func _process(delta: float) -> void:
+	if _match_running and not _is_replay_mode:
+		_elapsed_time += delta
+	_update_display()
 
 func _setup_rtl():
 	rtl.size = Vector2(900, 120)
@@ -43,7 +54,15 @@ func _setup_rtl():
 	add_child(rtl)
 
 func _update_display() -> void:
-	var elapsed := Time.get_ticks_msec() / 1000.0 - _match_start_time
+	var elapsed: float = _elapsed_time
+	
+	# Get time from replay manager if in replay mode
+	if _is_replay_mode:
+		if get_tree().root.has_node("Replay"):
+			var replay = get_tree().root.get_node("Replay")
+			if replay and replay.has_method("get_playback_time"):
+				elapsed = float(replay.call("get_playback_time"))
+	
 	var minutes := int(elapsed) / 60
 	var seconds := int(elapsed) % 60
 	var time_str := "%d:%02d" % [minutes, seconds]
@@ -61,3 +80,17 @@ func set_score(a: int, b: int) -> void:
 
 func stop_timer() -> void:
 	_match_running = false
+	# Add current round time to total match time and reset elapsed
+	_total_match_time += _elapsed_time
+	_elapsed_time = 0.0  # Reset so it's not double counted
+
+func set_replay_mode(enabled: bool) -> void:
+	_is_replay_mode = enabled
+
+func reset_timer() -> void:
+	_elapsed_time = 0.0
+	_match_running = true
+
+func get_total_match_time() -> float:
+	# Returns total time (already accumulated) plus current running round time
+	return _total_match_time + _elapsed_time

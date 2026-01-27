@@ -26,6 +26,8 @@ signal score_changed(a: int, b: int)
 @export var score_hud_scene: PackedScene
 var score_hud: ScoreHUD
 
+var _in_replay_mode: bool = false
+
 func _ready():
 	# Always sync from MatchConfig at runtime (export default is evaluated early).
 	mode_type = MatchConfig.game_mode
@@ -35,19 +37,23 @@ func _ready():
 	time_left = float(Enums.ROUNDS_SETTING_DURATION[SettingsManager.get_rounds_duration_index()])
 	map.map_loaded.connect(_on_map_loaded)
 
-	# Skip ScoreHUD during replay playback (it should not leak into the menu).
+	# Check if we're going into replay mode
 	var in_replay_playback := false
 	if get_tree().root.has_node("Replay"):
 		var replay := get_tree().root.get_node("Replay")
 		if replay != null and replay.has_method("is_playback_pending"):
 			in_replay_playback = bool(replay.call("is_playback_pending"))
+			if in_replay_playback and replay.has_method("get_mode_type"):
+				# Use the recorded mode type for visual initialization
+				mode_type = replay.call("get_mode_type") as Enums.GameMode
 
-	if not in_replay_playback:
-		# for real-time score display
-		score_hud = preload("res://scenes/ScoreHUD.tscn").instantiate() as ScoreHUD
-		get_tree().root.add_child(score_hud)
-		score_hud.set_score(scoreA, scoreB)
-		score_changed.connect(score_hud.set_score)
+	# Always create ScoreHUD (works for both normal and replay mode)
+	score_hud = preload("res://scenes/ScoreHUD.tscn").instantiate() as ScoreHUD
+	get_tree().root.add_child(score_hud)
+	if in_replay_playback:
+		score_hud.set_replay_mode(true)
+	score_hud.set_score(scoreA, scoreB)
+	score_changed.connect(score_hud.set_score)
 
 func _on_map_loaded():
 	_spawn_agents_and_assign_teams()
@@ -59,10 +65,13 @@ func _on_map_loaded():
 		var replay := get_tree().root.get_node("Replay")
 		if replay != null:
 			var agents := get_all_agents()
-			# If a replay is pending, enter playback mode and skip gameplay logic.
+			# If a replay is pending, enter playback mode
 			if replay.has_method("is_playback_pending") and bool(replay.call("is_playback_pending")):
+				_in_replay_mode = true
 				replay.call("begin_playback", agents)
 				set_process(false) # stop match timer + mode updates
+				# Still init mode for visual elements (flags for CTF, etc.)
+				_init_mode()
 				return
 			# Otherwise record this round. (If already recording, just update agent refs.)
 			if replay.has_method("is_recording") and bool(replay.call("is_recording")):
@@ -76,11 +85,14 @@ func _on_map_loaded():
 	_connect_agent_signals()
 	
 
+var _time_expired_called: bool = false
+
 func _process(delta: float) -> void:
 	time_left -= delta
 	if time_left <= 0.0:
 		time_left = 0.0
-		if mode and mode.has_method("on_time_expired"):
+		if not _time_expired_called and mode and mode.has_method("on_time_expired"):
+			_time_expired_called = true
 			mode.on_time_expired()
 	if mode:
 		mode.update(delta)
@@ -285,6 +297,10 @@ func on_round_ended(winning_team: int) -> void:
 	if round_over or match_over:
 		return
 	round_over = true
+	
+	# Stop HUD timer immediately
+	if is_instance_valid(score_hud):
+		score_hud.stop_timer()
 
 	print("round winning team = ", winning_team)
 	round_ended.emit(winning_team)
@@ -314,7 +330,7 @@ func on_round_ended(winning_team: int) -> void:
 	# Show countdown UI that still processes while paused
 	var ps := preload("res://scenes/RoundCountdown.tscn")
 	var countdown := ps.instantiate() as RoundCountdown
-	$"../UIRoot".add_child(countdown)  # or wherever your UI lives
+	$"../UILayer".add_child(countdown)  # Add to UI layer
 
 	var win_team_str: String
 	if winning_team == 0:
@@ -334,6 +350,11 @@ func on_round_ended(winning_team: int) -> void:
 	# reset left round time
 	time_left = float(Enums.ROUNDS_SETTING_DURATION[SettingsManager.get_rounds_duration_index()])
 	map.time_left = time_left
+	_time_expired_called = false  # Reset timer flag for new round
+	
+	# Reset HUD timer for new round
+	if is_instance_valid(score_hud):
+		score_hud.reset_timer()
 	
 	round_over = false
 	
@@ -341,6 +362,11 @@ func on_round_ended(winning_team: int) -> void:
 		_on_map_loaded()
 
 func on_match_ended(winning_team: int) -> void:
+	# Capture total match time BEFORE freeing the HUD
+	var total_match_time: float = 0.0
+	if is_instance_valid(score_hud) and score_hud.has_method("get_total_match_time"):
+		total_match_time = score_hud.get_total_match_time()
+	
 	# Finalize replay recording
 	if get_tree().root.has_node("Replay"):
 		var replay := get_tree().root.get_node("Replay")
@@ -375,6 +401,9 @@ func on_match_ended(winning_team: int) -> void:
 			teamA.comms if teamA != null else null,
 			teamB.comms if teamB != null else null
 		)
+		
+		# Use total match time captured earlier
+		result["duration_sec"] = total_match_time
 
 		menu.show_round_stats(result)
 	else:

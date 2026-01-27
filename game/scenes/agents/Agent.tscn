@@ -21,7 +21,7 @@ corner_radius_bottom_right = 22
 corner_radius_bottom_left = 22
 
 [sub_resource type="LabelSettings" id="LabelSettings_role"]
-font_size = 80
+font_size = 67
 outline_size = 8
 outline_color = Color(0, 0, 0, 1)
 shadow_size = 2
@@ -91,7 +91,7 @@ label_settings = SubResource("LabelSettings_role")
 horizontal_alignment = 1
 
 [node name="HealthBarBG" type="ColorRect" parent="HealthUI/VBox"]
-custom_minimum_size = Vector2(550, 35)
+custom_minimum_size = Vector2(350, 35)
 layout_mode = 2
 size_flags_horizontal = 4
 color = Color(0, 0, 0, 0.85)

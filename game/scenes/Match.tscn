@@ -11,7 +11,7 @@
 [ext_resource type="PackedScene" uid="uid://bbd4oromnp76g" path="res://scenes/maps/CtfMap.tscn" id="5_y61ah"]
 [ext_resource type="AudioStream" uid="uid://vor07icsy50i" path="res://assets/sounds/Sketchbook 2025-12-14 LOOP.ogg" id="8_bt7kc"]
 [ext_resource type="PackedScene" uid="uid://c8nbl1jmgdika" path="res://scenes/ui/LiveStatsOverlay.tscn" id="9_stats"]
-[ext_resource type="PackedScene" uid="uid://pausemenu" path="res://scenes/PauseMenu.tscn" id="10_pause"]
+[ext_resource type="PackedScene" uid="uid://ddagsdw18ossq" path="res://scenes/PauseMenu.tscn" id="10_pause"]
 
 [node name="Match" type="Node2D"]
 
@@ -52,4 +52,3 @@ zoom = Vector2(0.5, 0.5)
 [node name="Music" type="AudioStreamPlayer" parent="."]
 autoplay = true
 bus = &"Music"
-
