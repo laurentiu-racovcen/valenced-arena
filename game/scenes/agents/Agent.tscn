@@ -57,6 +57,17 @@ script = ExtResource("4_comms")
 stream = ExtResource("5_wrp4r")
 bus = &"SFX"
 
+[node name="HoverArea" type="Area2D" parent="."]
+input_pickable = true
+monitoring = true
+monitorable = true
+collision_layer = 0
+collision_mask = 0
+
+[node name="HoverCollision" type="CollisionShape2D" parent="HoverArea"]
+position = Vector2(-12.5, -6.2500005)
+shape = SubResource("CircleShape2D_wrp4r")
+
 [node name="HealthUI" type="Control" parent="."]
 layout_mode = 3
 anchors_preset = 1
@@ -78,6 +89,46 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 20
 alignment = 1
+
+[node name="StatsPopupBG" type="PanelContainer" parent="HealthUI/VBox"]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_role_bg")
+
+[node name="StatsVBox" type="VBoxContainer" parent="HealthUI/VBox/StatsPopupBG"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="KillsLabel" type="Label" parent="HealthUI/VBox/StatsPopupBG/StatsVBox"]
+layout_mode = 2
+text = "K: 0"
+label_settings = SubResource("LabelSettings_role")
+horizontal_alignment = 1
+
+[node name="DeathsLabel" type="Label" parent="HealthUI/VBox/StatsPopupBG/StatsVBox"]
+layout_mode = 2
+text = "D: 0"
+label_settings = SubResource("LabelSettings_role")
+horizontal_alignment = 1
+
+[node name="AssistsLabel" type="Label" parent="HealthUI/VBox/StatsPopupBG/StatsVBox"]
+layout_mode = 2
+text = "A: 0"
+label_settings = SubResource("LabelSettings_role")
+horizontal_alignment = 1
+
+[node name="DamageLabel" type="Label" parent="HealthUI/VBox/StatsPopupBG/StatsVBox"]
+layout_mode = 2
+text = "Dmg: 0"
+label_settings = SubResource("LabelSettings_role")
+horizontal_alignment = 1
+
+[node name="AccuracyLabel" type="Label" parent="HealthUI/VBox/StatsPopupBG/StatsVBox"]
+layout_mode = 2
+text = "Acc: 0%"
+label_settings = SubResource("LabelSettings_role")
+horizontal_alignment = 1
 
 [node name="RoleBG" type="PanelContainer" parent="HealthUI/VBox"]
 layout_mode = 2

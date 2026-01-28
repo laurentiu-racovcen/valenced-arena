@@ -43,6 +43,10 @@ func _ready() -> void:
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):  # ESC key
+		# Don't allow pause after match is finished
+		var game_manager := get_tree().current_scene.get_node_or_null("GameManager")
+		if game_manager != null and game_manager.get("match_over") == true:
+			return
 		toggle_pause()
 		get_viewport().set_input_as_handled()
 

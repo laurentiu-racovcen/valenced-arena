@@ -31,6 +31,15 @@ var movement_locked: bool = false
 @onready var health_bar_fill: ColorRect = $HealthUI/VBox/HealthBarBG/HealthBarFill if has_node("HealthUI/VBox/HealthBarBG/HealthBarFill") else null
 @onready var role_label: Label = $HealthUI/VBox/RoleBG/RoleLabel if has_node("HealthUI/VBox/RoleBG/RoleLabel") else null
 
+# Stats popup UI elements (hover display)
+@onready var stats_popup_bg: PanelContainer = $HealthUI/VBox/StatsPopupBG if has_node("HealthUI/VBox/StatsPopupBG") else null
+@onready var stats_kills_label: Label = $HealthUI/VBox/StatsPopupBG/StatsVBox/KillsLabel if has_node("HealthUI/VBox/StatsPopupBG/StatsVBox/KillsLabel") else null
+@onready var stats_deaths_label: Label = $HealthUI/VBox/StatsPopupBG/StatsVBox/DeathsLabel if has_node("HealthUI/VBox/StatsPopupBG/StatsVBox/DeathsLabel") else null
+@onready var stats_assists_label: Label = $HealthUI/VBox/StatsPopupBG/StatsVBox/AssistsLabel if has_node("HealthUI/VBox/StatsPopupBG/StatsVBox/AssistsLabel") else null
+@onready var stats_damage_label: Label = $HealthUI/VBox/StatsPopupBG/StatsVBox/DamageLabel if has_node("HealthUI/VBox/StatsPopupBG/StatsVBox/DamageLabel") else null
+@onready var stats_accuracy_label: Label = $HealthUI/VBox/StatsPopupBG/StatsVBox/AccuracyLabel if has_node("HealthUI/VBox/StatsPopupBG/StatsVBox/AccuracyLabel") else null
+@onready var hover_area: Area2D = $HoverArea if has_node("HoverArea") else null
+
 # Navigation pathfinding
 var navigation_agent: NavigationAgent2D = null
 var navigation_ready: bool = false
@@ -879,6 +888,10 @@ func _physics_process(delta: float) -> void:
 	fire_cooldown -= delta
 	if fire_cooldown <= 0.0:
 		_try_shoot()
+	
+	# Update stats popup in real-time if visible
+	if stats_popup_bg != null and stats_popup_bg.visible:
+		_update_stats_popup()
 
 
 func set_role(new_role: Role):
@@ -1272,3 +1285,63 @@ func _update_role_label() -> void:
 	}
 	role_label.text = role_names.get(role, "AGT")
 	# We don't color it here anymore because user wants it white (set in LabelSettings)
+
+# ============ STATS POPUP (CLICK) ============
+
+const CLICK_RADIUS := 25.0  # Click must be within this distance (in world pixels) to show popup
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		if stats_popup_bg == null:
+			return
+		
+		# Get mouse position in world coordinates
+		var mouse_pos: Vector2 = get_global_mouse_position()
+		var distance_to_mouse: float = global_position.distance_to(mouse_pos)
+		
+		# Click on agent = show popup, click elsewhere = hide popup
+		if distance_to_mouse <= CLICK_RADIUS:
+			_update_stats_popup()
+			stats_popup_bg.visible = true
+		else:
+			stats_popup_bg.visible = false
+
+func _show_stats_popup() -> void:
+	if stats_popup_bg == null:
+		return
+	
+	_update_stats_popup()
+	stats_popup_bg.visible = true
+
+func _hide_stats_popup() -> void:
+	if stats_popup_bg == null:
+		return
+	stats_popup_bg.visible = false
+
+func _update_stats_popup() -> void:
+	var stats_node := get_tree().current_scene.get_node_or_null("StatsManager") as StatsManager
+	if stats_node == null:
+		return
+	
+	var agent_stats: Dictionary = stats_node.per_agent.get(id, {})
+	if agent_stats.is_empty():
+		return
+	
+	var kills: int = agent_stats.get("kills", 0)
+	var deaths: int = agent_stats.get("deaths", 0)
+	var assists: int = agent_stats.get("assists", 0)
+	var damage_dealt: int = agent_stats.get("damage_dealt", 0)
+	var bullets_fired: int = agent_stats.get("bullets_fired", 0)
+	var bullets_hit: int = agent_stats.get("bullets_hit", 0)
+	var accuracy: float = (float(bullets_hit) / max(bullets_fired, 1)) * 100.0
+	
+	if stats_kills_label:
+		stats_kills_label.text = "K: %d" % kills
+	if stats_deaths_label:
+		stats_deaths_label.text = "D: %d" % deaths
+	if stats_assists_label:
+		stats_assists_label.text = "A: %d" % assists
+	if stats_damage_label:
+		stats_damage_label.text = "Dmg: %d" % damage_dealt
+	if stats_accuracy_label:
+		stats_accuracy_label.text = "Acc: %.0f%%" % accuracy

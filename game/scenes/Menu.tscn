@@ -12,7 +12,9 @@
 [ext_resource type="Texture2D" uid="uid://ckh2xcx0r48ej" path="res://assets/menu/normal/common/buttons/arrow_right.png" id="5_i7htd"]
 [ext_resource type="Texture2D" uid="uid://bfhk6h2i0t2yc" path="res://assets/menu/normal/settings/section-agents/button_los/los_m.png" id="5_r54wa"]
 [ext_resource type="Texture2D" uid="uid://cuyye0n2so3a" path="res://assets/menu/normal/settings/section-rounds/nr_rounds_1.png" id="5_rehui"]
-[ext_resource type="Texture2D" uid="uid://dnlb1kor0vjny" path="res://assets/menu/normal/gamemode-select/button_start.png" id="6_dek3k"]
+[ext_resource type="Texture2D" path="res://assets/menu/normal/gamemode-select/button_next.png" id="6_dek3k"]
+[ext_resource type="Texture2D" path="res://assets/menu/normal/map-select/button_start.png" id="map_start_normal"]
+[ext_resource type="Texture2D" path="res://assets/menu/hover/map-select/button_start.png" id="map_start_hover"]
 [ext_resource type="Texture2D" uid="uid://crog4hcrp6gws" path="res://assets/menu/normal/settings/sections-selector/button_rounds.png" id="6_l3wcu"]
 [ext_resource type="Texture2D" uid="uid://bf1dxnug4rpvu" path="res://assets/menu/normal/settings/section-agents/button_speed/mid.png" id="6_uds2g"]
 [ext_resource type="Texture2D" uid="uid://bt2nrhb17gv66" path="res://assets/menu/normal/settings/section-rounds/number_of_rounds icon.png" id="7_yvxia"]
@@ -34,7 +36,7 @@
 [ext_resource type="Texture2D" uid="uid://gyc0dmv5vvlj" path="res://assets/menu/hover/common/buttons/arrow_left.png" id="17_ksyst"]
 [ext_resource type="Texture2D" uid="uid://cmnyfms405iaq" path="res://assets/menu/hover/common/buttons/arrow_right.png" id="19_27abv"]
 [ext_resource type="Texture2D" uid="uid://cm7dm0hxasgsb" path="res://assets/menu/hover/settings/sections-selector/button_select.png" id="21_prgnb"]
-[ext_resource type="Texture2D" uid="uid://cclsqnh0kl21b" path="res://assets/menu/hover/gamemode-select/button_start.png" id="25_27abv"]
+[ext_resource type="Texture2D" path="res://assets/menu/hover/gamemode-select/button_next.png" id="25_27abv"]
 [ext_resource type="Texture2D" uid="uid://db5nnud5y2lhv" path="res://assets/menu/hover/initial-menu/button_play.png" id="27_m74h7"]
 [ext_resource type="Texture2D" uid="uid://bi4u8030lnmbg" path="res://assets/menu/hover/initial-menu/button_exit.png" id="29_yqqfh"]
 [ext_resource type="Texture2D" uid="uid://hxgygcw3o5bd" path="res://assets/menu/hover/initial-menu/button_settings.png" id="31_22i10"]
@@ -405,8 +407,8 @@ offset_right = 1163.0
 offset_bottom = 1000.0
 grow_horizontal = 2
 grow_vertical = 2
-texture_normal = ExtResource("6_dek3k")
-texture_hover = ExtResource("25_27abv")
+texture_normal = ExtResource("map_start_normal")
+texture_hover = ExtResource("map_start_hover")
 ignore_texture_size = true
 stretch_mode = 0
 
