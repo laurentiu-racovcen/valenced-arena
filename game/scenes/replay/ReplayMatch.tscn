@@ -1,0 +1,32 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/replay/ReplayController.gd" id="1_ctrl"]
+[ext_resource type="PackedScene" uid="uid://dxoskq82w5h82" path="res://scenes/GameMap.tscn" id="2_map"]
+[ext_resource type="Script" path="res://scripts/replay/ReplayHUD.gd" id="3_hud"]
+[ext_resource type="AudioStream" uid="uid://d1ociajsyat4p" path="res://assets/sounds/Ludum Dare 28 01.ogg" id="4_music_survival"]
+[ext_resource type="AudioStream" uid="uid://ccgdljy5rp0uq" path="res://assets/sounds/Ludum Dare 30 09.ogg" id="5_music_koth"]
+[ext_resource type="AudioStream" uid="uid://vor07icsy50i" path="res://assets/sounds/Sketchbook 2025-12-14 LOOP.ogg" id="6_music_ctf"]
+
+[node name="ReplayMatch" type="Node2D"]
+
+[node name="ReplayController" type="Node" parent="."]
+script = ExtResource("1_ctrl")
+
+[node name="AgentsRoot" type="Node2D" parent="."]
+
+[node name="GameMap" parent="." instance=ExtResource("2_map")]
+
+[node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(0.5, 0.5)
+
+[node name="UILayer" type="CanvasLayer" parent="."]
+layer = 10
+
+[node name="ReplayHUD" type="CanvasLayer" parent="."]
+layer = 100
+script = ExtResource("3_hud")
+
+[node name="Music" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("4_music_survival")
+autoplay = true
+bus = &"Music"

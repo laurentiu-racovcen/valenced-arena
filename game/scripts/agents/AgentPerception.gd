@@ -53,15 +53,6 @@ func get_visible_enemies() -> Array:
 				])
 			continue
 		
-		# Double-check with agent's own LOS method (more precise)
-		if not agent.has_line_of_sight_to(other):
-			# Debug: occasionally print why enemy failed final LOS check
-			if agent.debug_perception and randf() < 0.005:  # 0.5% of the time
-				print("[PERCEPTION] %s: Enemy %s failed final LOS check (dist: %.1f)" % [
-					agent.name, other.name, dist
-				])
-			continue
-		
 		# Debug: occasionally print when enemy IS visible
 		if agent.debug_perception and randf() < 0.01:
 			print("[PERCEPTION] %s: Enemy %s VISIBLE (dist: %.1f, los_range: %.1f)" % [

@@ -37,21 +37,9 @@ func _ready():
 	time_left = float(Enums.ROUNDS_SETTING_DURATION[SettingsManager.get_rounds_duration_index()])
 	map.map_loaded.connect(_on_map_loaded)
 
-	# Check if we're going into replay mode
-	var in_replay_playback := false
-	if get_tree().root.has_node("Replay"):
-		var replay := get_tree().root.get_node("Replay")
-		if replay != null and replay.has_method("is_playback_pending"):
-			in_replay_playback = bool(replay.call("is_playback_pending"))
-			if in_replay_playback and replay.has_method("get_mode_type"):
-				# Use the recorded mode type for visual initialization
-				mode_type = replay.call("get_mode_type") as Enums.GameMode
-
-	# Always create ScoreHUD (works for both normal and replay mode)
+	# Create ScoreHUD for live gameplay
 	score_hud = preload("res://scenes/ScoreHUD.tscn").instantiate() as ScoreHUD
 	get_tree().root.add_child(score_hud)
-	if in_replay_playback:
-		score_hud.set_replay_mode(true)
 	score_hud.set_score(scoreA, scoreB)
 	score_changed.connect(score_hud.set_score)
 
@@ -60,24 +48,21 @@ func _on_map_loaded():
 	var sm := $"../StatsManager" as StatsManager
 	if sm != null and sm.has_method("start_round"):
 		sm.start_round(get_all_agents())
-	# Replay integration (recording or playback)
+	
+	# Replay recording (playback uses dedicated ReplayMatch scene now)
 	if get_tree().root.has_node("Replay"):
 		var replay := get_tree().root.get_node("Replay")
 		if replay != null:
 			var agents := get_all_agents()
-			# If a replay is pending, enter playback mode
-			if replay.has_method("is_playback_pending") and bool(replay.call("is_playback_pending")):
-				_in_replay_mode = true
-				replay.call("begin_playback", agents)
-				set_process(false) # stop match timer + mode updates
-				# Still init mode for visual elements (flags for CTF, etc.)
-				_init_mode()
-				return
-			# Otherwise record this round. (If already recording, just update agent refs.)
+			# If already recording, just update agent refs
 			if replay.has_method("is_recording") and bool(replay.call("is_recording")):
 				if replay.has_method("set_recording_agents"):
 					replay.call("set_recording_agents", agents)
+				# Record round start for subsequent rounds
+				if replay.has_method("record_round_start"):
+					replay.call("record_round_start", rounds_played + 1)
 			else:
+				# Start new recording
 				if replay.has_method("begin_recording"):
 					replay.call("begin_recording", agents, int(mode_type))
 
@@ -190,6 +175,9 @@ func _on_agent_died(agent: Agent, killer) -> void:
 	if round_over or match_over:
 		return
 
+	# Record death for replay
+	_record_replay_agent_death(agent)
+
 	# Identificăm echipa (0 pentru Blue, 1 pentru Red)
 	var team_id = 0
 	if agent.team and agent.team.name.contains("TeamB"):
@@ -206,6 +194,7 @@ func _on_agent_died(agent: Agent, killer) -> void:
 		get_tree().create_timer(5.0).timeout.connect(_on_respawn_timer_expired.bind(team_id))
 	elif mode is CtfMode:
 		get_tree().create_timer(5.0).timeout.connect(_on_respawn_timer_expired.bind(team_id))
+
 
 func _on_respawn_timer_expired(team_id: int):
 	if round_over or match_over:
@@ -278,6 +267,9 @@ func _perform_respawn(team_id: int, role_to_apply: int):
 		agent.add_child(ctf_behavior)
 		agent.set_meta("ctf_behavior", ctf_behavior)
 	
+	# Record respawn for replay
+	_record_replay_agent_spawn(agent)
+	
 	# Conectăm moartea pentru a continua ciclul [cite: 8]
 	if mode is KothMode or mode is CtfMode:
 		agent.died.connect(_on_agent_died)
@@ -310,6 +302,10 @@ func on_round_ended(winning_team: int) -> void:
 		scoreB += 1
 
 	score_changed.emit(scoreA, scoreB)
+	
+	# Record replay events
+	_record_replay_score_change()
+	_record_replay_round_end(winning_team)
 
 	rounds_played += 1
 
@@ -458,3 +454,35 @@ func respawn_agent(team_id: int, agent_index: int):
 
 	# Reconectăm semnalul de moarte
 	agent.died.connect(_on_agent_died)
+
+## ===== REPLAY RECORDING HELPERS =====
+
+func _record_replay_score_change() -> void:
+	if not get_tree().root.has_node("Replay"):
+		return
+	var replay := get_tree().root.get_node("Replay")
+	if replay != null and replay.has_method("record_score_change"):
+		replay.call("record_score_change", scoreA, scoreB)
+
+func _record_replay_round_end(winner: int) -> void:
+	if not get_tree().root.has_node("Replay"):
+		return
+	var replay := get_tree().root.get_node("Replay")
+	if replay != null and replay.has_method("record_round_end"):
+		replay.call("record_round_end", winner, scoreA, scoreB)
+
+func _record_replay_agent_death(agent: Agent) -> void:
+	if not get_tree().root.has_node("Replay"):
+		return
+	var replay := get_tree().root.get_node("Replay")
+	if replay != null and replay.has_method("record_agent_death"):
+		var agent_id := str(agent.id) if agent.id != "" else str(agent.name)
+		replay.call("record_agent_death", agent_id)
+
+func _record_replay_agent_spawn(agent: Agent) -> void:
+	if not get_tree().root.has_node("Replay"):
+		return
+	var replay := get_tree().root.get_node("Replay")
+	if replay != null and replay.has_method("record_agent_spawn"):
+		var agent_id := str(agent.id) if agent.id != "" else str(agent.name)
+		replay.call("record_agent_spawn", agent_id, agent.global_position)
