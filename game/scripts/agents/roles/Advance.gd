@@ -27,6 +27,12 @@ var _focus_timer: float = 0.0
 func _physics_process(delta: float) -> void:
 	if not agent or not agent.is_alive():
 		return
+	
+	# KOTH MODE: Let KothBehavior handle all movement
+	if agent.has_meta("koth_behavior"):
+		var koth = agent.get_meta("koth_behavior")
+		if koth != null and is_instance_valid(koth):
+			return  # KothBehavior handles everything
 
 	var target_pos: Vector2
 	_combat_timer = max(_combat_timer - delta, 0.0)
@@ -146,8 +152,18 @@ func _physics_process(delta: float) -> void:
 		_combat_move_target = Vector2.ZERO
 		_combat_move_timer = 0.0
 		
-		# CTF MODE: Use CTF behavior target if available
-		if agent.has_meta("ctf_behavior"):
+		# KOTH MODE: Use KOTH behavior target if available (Advance has aggressive 0.3/0.7 weights)
+		var koth_active = false
+		if agent.has_meta("koth_behavior"):
+			var koth = agent.get_meta("koth_behavior")
+			if koth != null and is_instance_valid(koth) and koth.has_method("get_koth_target"):
+				var koth_target = koth.get_koth_target()
+				if koth_target != Vector2.ZERO:
+					target_pos = koth_target
+					koth_active = true
+		
+		# CTF MODE: Use CTF behavior target if available (and KOTH not active)
+		if not koth_active and agent.has_meta("ctf_behavior"):
 			var ctf = agent.get_meta("ctf_behavior")
 			if ctf != null and is_instance_valid(ctf) and ctf.has_method("get_ctf_target"):
 				target_pos = ctf.get_ctf_target()
@@ -155,8 +171,9 @@ func _physics_process(delta: float) -> void:
 				if target_pos == Vector2.ZERO or target_pos == agent.global_position:
 					target_pos = _get_follow_leader_target()
 			else:
-				target_pos = _get_follow_leader_target()
-		else:
+				if not koth_active:
+					target_pos = _get_follow_leader_target()
+		elif not koth_active:
 			target_pos = _get_follow_leader_target()
 	
 	# Clamp targets to navmesh to avoid drifting into holes/borders

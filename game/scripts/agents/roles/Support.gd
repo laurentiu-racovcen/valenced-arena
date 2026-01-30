@@ -20,6 +20,12 @@ const ASSIST_DISTANCE: float = 200.0
 func _physics_process(delta: float) -> void:
 	if not agent or not agent.is_alive():
 		return
+	
+	# KOTH MODE: Let KothBehavior handle all movement
+	if agent.has_meta("koth_behavior"):
+		var koth = agent.get_meta("koth_behavior")
+		if koth != null and is_instance_valid(koth):
+			return  # KothBehavior handles everything
 
 	var target_pos: Vector2 = agent.global_position
 	var current_time: float = Time.get_ticks_msec() / 1000.0
@@ -86,9 +92,27 @@ func _physics_process(delta: float) -> void:
 		sep_dist = 75.0
 		sep_weight = 0.7
 	else:
-		# CTF MODE: Use CTF behavior target if available
+		# KOTH MODE: Use KOTH behavior target if available (Support holds hill with 0.7 weight)
+		var koth_active = false
+		if agent.has_meta("koth_behavior"):
+			var koth = agent.get_meta("koth_behavior")
+			if koth != null and is_instance_valid(koth) and koth.has_method("get_koth_target"):
+				var koth_target = koth.get_koth_target()
+				if koth_target != Vector2.ZERO:
+					target_pos = koth_target
+					koth_active = true
+					if koth.should_hold_point():
+						speed_mult = 0.85
+						sep_dist = 90.0
+						sep_weight = 0.9
+					else:
+						speed_mult = 1.0
+						sep_dist = 80.0
+						sep_weight = 0.8
+		
+		# CTF MODE: Use CTF behavior target if available (and KOTH not active)
 		var ctf_active = false
-		if agent.has_meta("ctf_behavior"):
+		if not koth_active and agent.has_meta("ctf_behavior"):
 			var ctf = agent.get_meta("ctf_behavior")
 			if ctf != null and is_instance_valid(ctf) and ctf.has_method("get_ctf_target"):
 				var ctf_target = ctf.get_ctf_target()
@@ -99,8 +123,8 @@ func _physics_process(delta: float) -> void:
 					sep_dist = 80.0
 					sep_weight = 0.8
 		
-		# Default: stay near the tank, otherwise the leader (only when CTF not active)
-		if not ctf_active:
+		# Default: stay near the tank, otherwise the leader (only when KOTH/CTF not active)
+		if not koth_active and not ctf_active:
 			var tank := _get_tank()
 			if tank != null:
 				var d_to_tank: float = agent.global_position.distance_to(tank.global_position)

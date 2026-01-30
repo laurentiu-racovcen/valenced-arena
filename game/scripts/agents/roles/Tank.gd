@@ -14,6 +14,12 @@ var _focus_timer: float = 0.0
 func _physics_process(delta: float) -> void:
 	if not agent or not agent.is_alive():
 		return
+	
+	# KOTH MODE: Let KothBehavior handle all movement
+	if agent.has_meta("koth_behavior"):
+		var koth = agent.get_meta("koth_behavior")
+		if koth != null and is_instance_valid(koth):
+			return  # KothBehavior handles everything
 
 	var target_pos: Vector2
 	var speed_mult: float = 0.8
@@ -70,9 +76,28 @@ func _physics_process(delta: float) -> void:
 		sep_dist = 80.0
 		sep_weight = 0.2
 	else:
-		# CTF MODE: Use CTF behavior target if available
+		# KOTH MODE: Use KOTH behavior target if available (Tank holds hill with 0.9 weight)
+		var koth_active = false
+		if agent.has_meta("koth_behavior"):
+			var koth = agent.get_meta("koth_behavior")
+			if koth != null and is_instance_valid(koth) and koth.has_method("get_koth_target"):
+				var koth_target = koth.get_koth_target()
+				if koth_target != Vector2.ZERO:
+					target_pos = koth_target
+					koth_active = true
+					# Tank with high hold weight should move slower when on hill
+					if koth.should_hold_point():
+						speed_mult = 0.7
+						sep_dist = 100.0
+						sep_weight = 0.9
+					else:
+						speed_mult = 1.0
+						sep_dist = 80.0
+						sep_weight = 0.8
+		
+		# CTF MODE: Use CTF behavior target if available (and KOTH not active)
 		var ctf_active = false
-		if agent.has_meta("ctf_behavior"):
+		if not koth_active and agent.has_meta("ctf_behavior"):
 			var ctf = agent.get_meta("ctf_behavior")
 			if ctf != null and is_instance_valid(ctf) and ctf.has_method("get_ctf_target"):
 				var ctf_target = ctf.get_ctf_target()
@@ -84,7 +109,7 @@ func _physics_process(delta: float) -> void:
 					sep_weight = 0.8
 		
 		# Regular mode or fallback
-		if not ctf_active:
+		if not koth_active and not ctf_active:
 			# 2. Fără inamici → stă și el aproape de leader (rol de “bodyguard”)
 			var leader: Agent = agent.team.get_leader() if agent.team != null else null
 			if leader == null:

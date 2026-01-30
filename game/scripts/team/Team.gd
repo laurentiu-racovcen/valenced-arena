@@ -59,6 +59,13 @@ func get_leader() -> Agent:
 func _ensure_leader_exists() -> void:
 	# When the current leader dies, some roles (Tank/Advance) would stop moving.
 	# Promote a surviving member to leader so formation/advance logic continues.
+	
+	# SKIP PROMOTIONS in KOTH and CTF modes - agents respawn with original roles
+	# Promotions would cause wrong roles when respawning
+	var game_mode = MatchConfig.game_mode if MatchConfig else Enums.GameMode.SURVIVAL
+	if game_mode == Enums.GameMode.KOTH or game_mode == Enums.GameMode.CTF:
+		return  # Don't promote - agents will respawn with their original role
+	
 	if get_leader() != null:
 		return
 

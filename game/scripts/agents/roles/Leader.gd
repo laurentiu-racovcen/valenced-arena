@@ -55,6 +55,12 @@ var _focus_timer: float = 0.0
 func _physics_process(delta: float) -> void:
 	if not agent or not agent.is_alive():
 		return
+	
+	# KOTH MODE: Let KothBehavior handle all movement
+	if agent.has_meta("koth_behavior"):
+		var koth = agent.get_meta("koth_behavior")
+		if koth != null and is_instance_valid(koth):
+			return  # KothBehavior handles everything
 
 	idle_roam_timer = max(idle_roam_timer - delta, 0.0)
 	_dbg_timer = max(_dbg_timer - delta, 0.0)
@@ -200,9 +206,19 @@ func _physics_process(delta: float) -> void:
 		_combat_move_target = Vector2.ZERO
 		_combat_move_timer = 0.0
 		
-		# CTF MODE: Use CTF behavior target if available
+		# KOTH MODE: Use KOTH behavior target if available (Leader has balanced 0.5/0.5 weights)
+		var koth_active = false
+		if agent.has_meta("koth_behavior"):
+			var koth = agent.get_meta("koth_behavior")
+			if koth != null and is_instance_valid(koth) and koth.has_method("get_koth_target"):
+				var koth_target = koth.get_koth_target()
+				if koth_target != Vector2.ZERO:
+					target_point = koth_target
+					koth_active = true
+		
+		# CTF MODE: Use CTF behavior target if available (and KOTH not active)
 		var ctf_active = false
-		if agent.has_meta("ctf_behavior"):
+		if not koth_active and agent.has_meta("ctf_behavior"):
 			var ctf = agent.get_meta("ctf_behavior")
 			if ctf != null and is_instance_valid(ctf) and ctf.has_method("get_ctf_target"):
 				var ctf_target = ctf.get_ctf_target()
@@ -210,8 +226,8 @@ func _physics_process(delta: float) -> void:
 					target_point = ctf_target
 					ctf_active = true
 		
-		# Fallback to default targeting if CTF not active
-		if not ctf_active:
+		# Fallback to default targeting if no mode-specific behavior active
+		if not koth_active and not ctf_active:
 			target_point = _get_default_target()
 	
 	# Clamp targets to navmesh to avoid drifting into holes/borders

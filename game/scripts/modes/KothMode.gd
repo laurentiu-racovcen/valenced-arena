@@ -1,6 +1,9 @@
 extends GameModeBase
 class_name KothMode
 
+# Preload behavior class
+const KothBehaviorClass = preload("res://scripts/agents/KothBehavior.gd")
+
 var hill_pos: Vector2 = Vector2.ZERO
 var hill_radius: float = 200.0
 var score_accumulator: float = 0.0 # Track partial seconds
@@ -32,87 +35,97 @@ func setup(ctx) -> void:
 				agent.koth_mode = true
 				agent.hill_location = hill_pos
 				agent.hill_radius = rad
+		
+		# Attach KOTH behavior with role weights to all agents
+		_setup_agents_for_koth()
 
-#func update(delta: float) -> void:
-	#var blue_present: bool = false
-	#var red_present: bool = false
-	#
-	## Check all agents for presence in the hill
-	#for node in context.get_all_agents():
-		#var agent = node as Agent
-		#if not agent or not agent.is_alive(): 
-			#continue
-		## Buffer distance check (radius + 25px)
-		#if agent.global_position.distance_to(hill_pos) < (hill_radius + 25.0):
-			#if agent.team.get_team_id() == 0: 
-				#blue_present = true
-			#else: red_present = true
-	#
-	#var score_changed: bool = false
-#
-	## Independent scoring for Blue Team
-	#if blue_present:
-		#blue_accumulator += delta
-		#if blue_accumulator >= 1.0:
-			#blue_accumulator -= 1.0
-			#context.scoreA += 1
-			#score_changed = true
-			#
-	## Independent scoring for Red Team
-	#if red_present:
-		#red_accumulator += delta
-		#if red_accumulator >= 1.0:
-			#red_accumulator -= 1.0
-			#context.scoreB += 1
-			#score_changed = true
-			#
-	## Update the HUD only if a point was actually added
-	#if score_changed:
-		#context.score_changed.emit(context.scoreA, context.scoreB)
-func update(delta: float) -> void:
-	var blue_present: bool = false
-	var red_present: bool = false
+func _setup_agents_for_koth() -> void:
+	for agent in context.get_all_agents():
+		_attach_koth_behavior(agent)
+
+## Attach KOTH behavior to a single agent (used for initial setup and respawns)
+func _attach_koth_behavior(agent: Node) -> void:
+	if not agent is Agent:
+		return
 	
-	# Verificăm prezența echipelor în cerc
+	# Skip if already has behavior attached
+	if agent.has_meta("koth_behavior"):
+		var existing = agent.get_meta("koth_behavior")
+		if existing != null and is_instance_valid(existing):
+			return
+	
+	# Set KOTH mode vars
+	agent.koth_mode = true
+	agent.hill_location = hill_pos
+	agent.hill_radius = hill_radius
+	agent.set_meta("koth_mode", true)
+	
+	# Attach KOTH behavior module with role-based weights
+	var koth_behavior = KothBehaviorClass.new()
+	koth_behavior.setup(agent, hill_pos, hill_radius)
+	agent.add_child(koth_behavior)
+	agent.set_meta("koth_behavior", koth_behavior)
+	
+	print("[KOTH] %s (%s) behavior attached - hold:%.1f, attack:%.1f" % [
+		agent.name,
+		Agent.Role.keys()[agent.role],
+		koth_behavior.get_hold_weight(),
+		koth_behavior.get_attack_weight()
+	])
+
+func update(delta: float) -> void:
+	var blue_count: int = 0
+	var red_count: int = 0
+	
+	# Check all agents - attach behavior if missing (handles respawns)
 	for node in context.get_all_agents():
 		var agent = node as Agent
 		if not agent or not agent.is_alive(): 
 			continue
 		
-		# Calculăm distanța până la centrul colinei [cite: 7]
+		# RESPAWN FIX: Attach KOTH behavior if agent doesn't have it
+		if not agent.has_meta("koth_behavior") or not is_instance_valid(agent.get_meta("koth_behavior")):
+			_attach_koth_behavior(agent)
+		
+		# Calculate distance to hill center
 		var dist_to_hill = agent.global_position.distance_to(hill_pos)
 		
-		# Folosim raza plus un mic buffer pentru acuratețe [cite: 7]
+		# Use radius plus small buffer for accuracy
 		if dist_to_hill < (hill_radius + 25.0):
 			if agent.team.get_team_id() == 0:
-				blue_present = true
+				blue_count += 1
 			else:
-				red_present = red_present or true # Mark red as present
+				red_count += 1
 
-	# LOGICA NOUĂ: Incrementăm scorul DOAR dacă o singură echipă ocupă cercul
-	# Folosim operatorul XOR (a != b) pentru a ne asigura că doar una e prezentă
-	if blue_present and not red_present:
-		# Echipa Albastră controlează singură
+	# MAJORITY CONTROL: Team with MORE agents on the hill scores
+	# If tied (same count), no one scores (contested)
+	if blue_count > red_count and blue_count > 0:
+		# Blue Team has majority control
 		blue_accumulator += delta
 		if blue_accumulator >= 1.0:
 			blue_accumulator -= 1.0
 			context.scoreA += 1
 			context.score_changed.emit(context.scoreA, context.scoreB)
+		# Reset red accumulator when blue controls
+		red_accumulator = 0.0
 			
-	elif red_present and not blue_present:
-		# Echipa Roșie controlează singură
+	elif red_count > blue_count and red_count > 0:
+		# Red Team has majority control
 		red_accumulator += delta
 		if red_accumulator >= 1.0:
 			red_accumulator -= 1.0
 			context.scoreB += 1
 			context.score_changed.emit(context.scoreA, context.scoreB)
+		# Reset blue accumulator when red controls
+		blue_accumulator = 0.0
 			
 	else:
-		# Dacă sunt AMBELE echipe (contested) sau NICIUNA, nu facem nimic
-		# Putem reseta acumulatoarele dacă vrem să pedepsim pierderea controlului
-		pass
+		# Contested (equal count) or empty - no points, reset accumulators
+		blue_accumulator = 0.0
+		red_accumulator = 0.0
+
 func on_time_expired() -> void:
-	# Câștigătorul se decide strict după scorul acumulat în GameManager
+	# Winner decided by accumulated score in GameManager
 	var winner = -1
 	if context.scoreA > context.scoreB:
 		winner = 0

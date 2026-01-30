@@ -448,8 +448,9 @@ func move_towards(target_pos: Vector2, delta: float, speed_mult := 1.0, sep_dist
 		return
 
 	# --- KOTH OVERRIDE ---
+	# Only apply if KothBehavior is NOT handling movement (legacy fallback)
 	var final_target = target_pos
-	if koth_mode:
+	if koth_mode and not has_meta("koth_behavior"):
 		var dist_to_hill = global_position.distance_to(hill_location)
 		
 		# If inside the hill, prioritize combat but stay in the area

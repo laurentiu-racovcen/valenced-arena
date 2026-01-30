@@ -185,16 +185,14 @@ func _on_agent_died(agent: Agent, killer) -> void:
 		
 	# Salvăm rolul și ID-ul în coada echipei pentru respawn
 	var agent_id := str(agent.id) if agent.id != "" else str(agent.name)
-	_respawn_queues[team_id].push_back({"role": agent.role, "id": agent_id})
-	
+	var saved_role = agent.role
+	_respawn_queues[team_id].push_back({"role": saved_role, "id": agent_id})
 	
 	on_agent_killed(agent, killer)
 	
 	# Pornim timer-ul de respawn
-	if mode is KothMode:
-		get_tree().create_timer(5.0).timeout.connect(_on_respawn_timer_expired.bind(team_id))
-	elif mode is CtfMode:
-		get_tree().create_timer(5.0).timeout.connect(_on_respawn_timer_expired.bind(team_id))
+	var timer_duration = 5.0
+	get_tree().create_timer(timer_duration).timeout.connect(_on_respawn_timer_expired.bind(team_id))
 
 
 func _on_respawn_timer_expired(team_id: int):
@@ -203,6 +201,7 @@ func _on_respawn_timer_expired(team_id: int):
 	
 	# Extragem primul agent care a murit din coadă
 	if _respawn_queues[team_id].is_empty():
+		print("[RESPAWN] Timer expired but queue is empty for team %d" % team_id)
 		return
 		
 	var next_data = _respawn_queues[team_id].pop_front()
@@ -214,6 +213,7 @@ func _on_respawn_timer_expired(team_id: int):
 		original_id = str(next_data.get("id", ""))
 	else:
 		next_role = int(next_data)
+	
 	_perform_respawn(team_id, next_role, original_id)
 
 func _perform_respawn(team_id: int, role_to_apply: int, original_id: String = ""):
@@ -255,7 +255,7 @@ func _perform_respawn(team_id: int, role_to_apply: int, original_id: String = ""
 	agents_root.add_child(agent)
 	
 	# Forțăm încărcarea AI-ului pentru rolul nou
-	agent.set_role(actual_role) 
+	agent.set_role(actual_role)
 
 	agent.map = map
 	team.add_member(agent, 1)
@@ -272,6 +272,18 @@ func _perform_respawn(team_id: int, role_to_apply: int, original_id: String = ""
 		agent.koth_mode = true
 		agent.hill_location = mode.hill_pos
 		agent.hill_radius = mode.hill_radius
+		agent.set_meta("koth_mode", true)
+		# Attach KOTH behavior module (just like CTF does)
+		var koth_behavior = load("res://scripts/agents/KothBehavior.gd").new()
+		koth_behavior.setup(agent, mode.hill_pos, mode.hill_radius)
+		agent.add_child(koth_behavior)
+		agent.set_meta("koth_behavior", koth_behavior)
+		print("[KOTH] %s (%s) respawn behavior attached - hold:%.1f, attack:%.1f" % [
+			agent.name,
+			Agent.Role.keys()[agent.role],
+			koth_behavior.get_hold_weight(),
+			koth_behavior.get_attack_weight()
+		])
 	
 	# CTF mode setup for respawned agent
 	if mode is CtfMode:
