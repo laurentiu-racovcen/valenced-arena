@@ -450,17 +450,47 @@ func move_towards(target_pos: Vector2, delta: float, speed_mult := 1.0, sep_dist
 	# --- KOTH OVERRIDE ---
 	var final_target = target_pos
 	if koth_mode:
-		#if koth_mode and Engine.get_frames_drawn() % 60 == 0:
-			#print(name, " is moving to hill_location: ", hill_location)
 		var dist_to_hill = global_position.distance_to(hill_location)
 		
-		# If inside the hill, stop moving and exit early 
-		if dist_to_hill < hill_radius * 0.5:
-			move_dir = Vector2.ZERO
-			velocity = velocity.lerp(Vector2.ZERO, clamp(accel * delta * 5.0, 0.0, 1.0))
-			move_and_slide()
-			return # This prevents them from moving around once inside
+		# If inside the hill, prioritize combat but stay in the area
+		if dist_to_hill < hill_radius * 0.7:
+			# Check for visible enemies
+			var visible_enemies = perception.get_visible_enemies() if perception else []
+			var closest_enemy: Agent = null
+			var closest_dist := INF
+			
+			for e in visible_enemies:
+				var enemy := e as Agent
+				if enemy and is_instance_valid(enemy):
+					var d := enemy.global_position.distance_to(global_position)
+					if d < closest_dist:
+						closest_dist = d
+						closest_enemy = enemy
+			
+			# If we have a visible enemy, move to engage them (but stay in hill)
+			if closest_enemy:
+				var enemy_pos = closest_enemy.global_position
+				var enemy_dist_to_hill = enemy_pos.distance_to(hill_location)
+				
+				# If enemy is also in/near the hill, engage them
+				if enemy_dist_to_hill < hill_radius * 1.2:
+					final_target = enemy_pos
+				else:
+					# Enemy is outside hill - stay put and shoot from here
+					final_target = global_position
+			else:
+				# No enemy visible - slow patrol within the hill
+				# Move slightly towards hill center if drifting
+				if dist_to_hill > hill_radius * 0.3:
+					final_target = hill_location
+				else:
+					# At center - slow down significantly but allow small adjustments
+					move_dir = Vector2.ZERO
+					velocity = velocity.lerp(Vector2.ZERO, clamp(accel * delta * 3.0, 0.0, 1.0))
+					move_and_slide()
+					return
 		else:
+			# Not in hill yet - move towards it
 			final_target = hill_location
 	# ---------------------
 

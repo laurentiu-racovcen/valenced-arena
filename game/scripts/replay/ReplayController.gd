@@ -35,6 +35,14 @@ var _scoreB: int = 0
 
 var _replay_bullets: Array = []  # Track spawned bullets to pause/resume them
 
+# CTF flag references for replay
+var _blue_flag: Node2D = null
+var _red_flag: Node2D = null
+var _flag_spawn_positions: Dictionary = {}  # team_id -> spawn position
+
+# Track agent alive state overrides from events (spawn/death events override frame data)
+var _alive_override: Dictionary = {}  # agent_id -> bool (true = alive, false = dead)
+
 @onready var agents_root: Node2D = get_parent().get_node_or_null("AgentsRoot")
 
 func _ready() -> void:
@@ -73,15 +81,12 @@ func _load_replay_data() -> void:
 	
 	_total_duration = float((_frames[_frames.size() - 1] as Dictionary).get("t", 0.0))
 	
-	print("[ReplayController] Loaded replay: %d frames, %d events, %.1fs duration" % [
-		_frames.size(), _events.size(), _total_duration
-	])
-	
 	# Clear pending flag so new matches don't try to replay
 	if replay.has_method("clear_pending"):
 		replay.call("clear_pending")
 	
 	_spawn_puppets()
+	_spawn_ctf_flags()  # Spawn flags for CTF mode
 	_start_playback()
 
 func _spawn_puppets() -> void:
@@ -121,8 +126,6 @@ func _spawn_puppets() -> void:
 		puppet.setup(id_str, team_id, role)
 		
 		_puppets[id_str] = puppet
-		
-		print("[ReplayController] Spawned puppet: %s (team=%d, role=%d)" % [id_str, team_id, role])
 	
 	# Apply initial frame to position puppets
 	if not _frames.is_empty():
@@ -146,6 +149,13 @@ func _start_playback() -> void:
 	_event_idx = 0
 	_scoreA = 0
 	_scoreB = 0
+	
+	# Debug: show event type counts
+	# var event_counts := {}
+	# for e in _events:
+	# 	var etype := str(e.get("type", "unknown"))
+	# 	event_counts[etype] = event_counts.get(etype, 0) + 1
+	# print("[Replay] Event counts: %s" % str(event_counts))
 	
 	playback_started.emit()
 	score_changed.emit(_scoreA, _scoreB)
@@ -173,6 +183,9 @@ func seek(time: float) -> void:
 	
 	# Clear all existing bullets when seeking
 	_clear_bullets()
+	
+	# Clear alive override - will be rebuilt from events
+	_alive_override.clear()
 	
 	# Reset frame index
 	_play_idx = 0
@@ -293,13 +306,18 @@ func _apply_interpolated_frame() -> void:
 		var rot: float = lerp_angle(r0, r1, alpha)
 		
 		# Use state from f0 for discrete values (hp, ammo, alive)
+		# Check if we have an override from spawn/death events
+		var alive_state: bool = bool(s0.get("alive", true))
+		if _alive_override.has(aid):
+			alive_state = _alive_override[aid]
+		
 		puppet.apply_state(
 			pos.x,
 			pos.y,
 			rot,
 			int(s0.get("hp", 100)),
 			int(s0.get("ammo", 30)),
-			bool(s0.get("alive", true))
+			alive_state
 		)
 
 func _process_events() -> void:
@@ -354,6 +372,15 @@ func _handle_event(e: Dictionary, skip_bullets: bool = false) -> void:
 			_handle_agent_spawn(e)
 		"agent_death":
 			_handle_agent_death(e)
+		# CTF flag events
+		"flag_pickup":
+			_handle_flag_pickup(e)
+		"flag_drop":
+			_handle_flag_drop(e)
+		"flag_return":
+			_handle_flag_return(e)
+		"flag_capture":
+			_handle_flag_capture(e)
 
 func _spawn_bullet(e: Dictionary) -> void:
 	## Spawn a visual-only bullet for replay
@@ -404,18 +431,24 @@ func _handle_agent_spawn(e: Dictionary) -> void:
 	var aid := str(e.get("id", ""))
 	var puppet: PuppetAgent = _puppets.get(aid) as PuppetAgent
 	if puppet:
+		# Set override so frame data doesn't overwrite visibility
+		_alive_override[aid] = true
 		puppet.visible = true
 		var x := float(e.get("x", puppet.global_position.x))
 		var y := float(e.get("y", puppet.global_position.y))
 		puppet.global_position = Vector2(x, y)
 		puppet.hp = puppet.max_hp
 		print("[Replay] Agent %s respawned at (%.0f, %.0f)" % [aid, x, y])
+	else:
+		print("[Replay] WARNING: Agent spawn event for '%s' but no puppet found! Available: %s" % [aid, str(_puppets.keys())])
 
 func _handle_agent_death(e: Dictionary) -> void:
 	## Handle death event (hide puppet)
 	var aid := str(e.get("id", ""))
 	var puppet: PuppetAgent = _puppets.get(aid) as PuppetAgent
 	if puppet:
+		# Set override so frame data doesn't overwrite visibility
+		_alive_override[aid] = false
 		puppet.visible = false
 		print("[Replay] Agent %s died" % aid)
 
@@ -450,3 +483,123 @@ func exit_to_menu() -> void:
 	
 	get_tree().change_scene_to_file("res://scenes/Menu.tscn")
 
+## ===== CTF FLAG HANDLING =====
+
+func _spawn_ctf_flags() -> void:
+	## Spawn flags for CTF mode replay
+	var mode := int(_data.get("mode", 0))
+	if mode != 2:  # 2 = CTF mode
+		return
+	
+	var map = get_parent().get_node_or_null("GameMap")
+	if map == null:
+		push_error("[Replay] ERROR: No GameMap found, can't spawn CTF flags")
+		return
+	
+	# Wait for map to load if not yet loaded
+	if map.current_map == null:
+		print("[Replay] Map not loaded yet, connecting to map_loaded signal...")
+		# Connect to map_loaded signal and try again
+		if not map.map_loaded.is_connected(_on_map_loaded_spawn_flags):
+			map.map_loaded.connect(_on_map_loaded_spawn_flags)
+		# Also try a deferred call as backup
+		call_deferred("_check_and_spawn_flags")
+		return
+	
+	_do_spawn_ctf_flags(map.current_map)
+
+func _check_and_spawn_flags() -> void:
+	## Deferred backup call to try spawning flags
+	await get_tree().create_timer(0.5).timeout
+	var map = get_parent().get_node_or_null("GameMap")
+	if map and map.current_map and _blue_flag == null:
+		_do_spawn_ctf_flags(map.current_map)
+
+func _on_map_loaded_spawn_flags() -> void:
+	# Defer the spawn to avoid "busy setting up children" error
+	call_deferred("_deferred_spawn_flags")
+
+func _deferred_spawn_flags() -> void:
+	var map = get_parent().get_node_or_null("GameMap")
+	if map and map.current_map:
+		_do_spawn_ctf_flags(map.current_map)
+
+func _do_spawn_ctf_flags(map_instance: Node) -> void:
+	var flag_scene = preload("res://scenes/modes/Flag.tscn")
+	
+	# Find flag spawn positions
+	var blue_spawn_node = map_instance.find_child("BlueFlagSpawn", true, false)
+	var red_spawn_node = map_instance.find_child("RedFlagSpawn", true, false)
+	
+	if blue_spawn_node:
+		_flag_spawn_positions[0] = blue_spawn_node.global_position
+	else:
+		print("[Replay] WARNING: BlueFlagSpawn not found in map!")
+		
+	if red_spawn_node:
+		_flag_spawn_positions[1] = red_spawn_node.global_position
+	else:
+		push_warning("[Replay] RedFlagSpawn not found in map!")
+	
+	# Spawn blue flag using call_deferred to avoid "busy setting up children"
+	if _flag_spawn_positions.has(0) and _blue_flag == null:
+		_blue_flag = flag_scene.instantiate()
+		_blue_flag.team_id = 0
+		_blue_flag.global_position = _flag_spawn_positions[0]
+		# Disable flag pickup logic for replay
+		_blue_flag.set_process(false)
+		_blue_flag.set_physics_process(false)
+		get_parent().call_deferred("add_child", _blue_flag)
+	
+	# Spawn red flag
+	if _flag_spawn_positions.has(1) and _red_flag == null:
+		_red_flag = flag_scene.instantiate()
+		_red_flag.team_id = 1
+		_red_flag.global_position = _flag_spawn_positions[1]
+		_red_flag.set_process(false)
+		_red_flag.set_physics_process(false)
+		get_parent().call_deferred("add_child", _red_flag)
+
+func _handle_flag_pickup(e: Dictionary) -> void:
+	var flag_team := int(e.get("flag_team", -1))
+	var carrier_id := str(e.get("carrier", ""))
+	
+	var flag: Node2D = _blue_flag if flag_team == 0 else _red_flag
+	var carrier: PuppetAgent = _puppets.get(carrier_id) as PuppetAgent
+	
+	if flag and carrier and flag.is_inside_tree():
+		# Attach flag to carrier (visually)
+		flag.reparent(carrier)
+		flag.position = Vector2(0, -20)  # Offset above carrier
+	else:
+		push_warning("[Replay] Cannot pickup flag - flag=%s carrier=%s" % [str(flag != null), str(carrier != null)])
+
+func _handle_flag_drop(e: Dictionary) -> void:
+	var flag_team := int(e.get("flag_team", -1))
+	var drop_pos := Vector2(float(e.get("x", 0.0)), float(e.get("y", 0.0)))
+	
+	var flag: Node2D = _blue_flag if flag_team == 0 else _red_flag
+	
+	if flag and flag.is_inside_tree():
+		# Reparent flag back to scene root
+		flag.reparent(get_parent())
+		flag.global_position = drop_pos
+
+func _handle_flag_return(e: Dictionary) -> void:
+	var flag_team := int(e.get("flag_team", -1))
+	
+	var flag: Node2D = _blue_flag if flag_team == 0 else _red_flag
+	
+	if flag and flag.is_inside_tree() and _flag_spawn_positions.has(flag_team):
+		flag.reparent(get_parent())
+		flag.global_position = _flag_spawn_positions[flag_team]
+
+func _handle_flag_capture(e: Dictionary) -> void:
+	var flag_team := int(e.get("flag_team", -1))
+	
+	var flag: Node2D = _blue_flag if flag_team == 0 else _red_flag
+	
+	if flag and flag.is_inside_tree() and _flag_spawn_positions.has(flag_team):
+		# Return flag to base after capture
+		flag.reparent(get_parent())
+		flag.global_position = _flag_spawn_positions[flag_team]

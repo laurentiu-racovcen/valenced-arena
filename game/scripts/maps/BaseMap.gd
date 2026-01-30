@@ -12,12 +12,44 @@ func _ready() -> void:
 	assert(map_sprite != null)
 	assert(map_body != null)
 	
+	# Skip navigation setup during replay - puppets don't use pathfinding
+	if _is_replay_mode():
+		# Explicitly remove any NavigationRegion2D nodes to prevent engine synchronization/warnings
+		for child in find_children("*", "NavigationRegion2D", true, false):
+			if child is NavigationRegion2D:
+				child.queue_free()
+		return
+	
 	# Find manually created NavigationRegion2D in the scene
 	_find_manual_navigation()
 	
 	# Navigation is now set up manually in the editor
 	# Uncomment the line below if you want automatic generation instead:
 	# call_deferred("_build_navigation")
+
+func _is_replay_mode() -> bool:
+	# Check using ReplayManager autoload which is always available
+	if get_tree().root.has_node("Replay"):
+		var replay := get_tree().root.get_node("Replay")
+		if replay.has_method("is_playing_replay"):
+			return replay.call("is_playing_replay")
+		# Fallback: check if scene name contains replay
+	
+	# Check current scene name
+	var current_scene := get_tree().current_scene
+	if current_scene:
+		var scene_name := current_scene.name.to_lower()
+		if "replay" in scene_name:
+			return true
+	
+	# Check if ReplayController exists as a sibling or in parent
+	var parent := get_parent()
+	while parent:
+		if parent.get_node_or_null("ReplayController"):
+			return true
+		parent = parent.get_parent()
+	
+	return false
 
 func _find_manual_navigation() -> void:
 	# Look for a NavigationRegion2D that was manually added in the editor

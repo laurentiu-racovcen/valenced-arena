@@ -27,3 +27,8 @@ window/size/viewport_width=1920
 window/size/viewport_height=1080
 window/size/mode=3
 window/stretch/mode="viewport"
+
+[navigation]
+
+2d/default_cell_size=2.0
+2d/merge_rasterizer_cell_scale=0.1

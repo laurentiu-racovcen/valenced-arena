@@ -246,6 +246,8 @@ func _on_flag_picked_up(flag, agent: Agent) -> void:
 	print("[CTF] %s picked up the %s flag!" % [
 		agent.name, "Blue" if flag.team_id == 0 else "Red"
 	])
+	# Record for replay
+	_record_replay_flag_pickup(flag.team_id, agent.id if "id" in agent else agent.name)
 	# Notify all agents about flag status
 	_broadcast_flag_status(flag)
 
@@ -253,12 +255,16 @@ func _on_flag_dropped(flag, position: Vector2) -> void:
 	print("[CTF] %s flag dropped at %s" % [
 		"Blue" if flag.team_id == 0 else "Red", str(position)
 	])
+	# Record for replay
+	_record_replay_flag_drop(flag.team_id, position)
 	_broadcast_flag_status(flag)
 
 func _on_flag_returned(flag) -> void:
 	print("[CTF] %s flag returned to base!" % [
 		"Blue" if flag.team_id == 0 else "Red"
 	])
+	# Record for replay
+	_record_replay_flag_return(flag.team_id)
 	_broadcast_flag_status(flag)
 
 func _on_flag_delivered(flag, agent: Agent) -> void:
@@ -272,6 +278,9 @@ func _on_flag_delivered(flag, agent: Agent) -> void:
 			"Blue" if flag.team_id == 0 else "Red",
 			score[0], score[1]
 		])
+		
+		# Record for replay
+		_record_replay_flag_capture(flag.team_id, agent.id if "id" in agent else agent.name)
 		
 		# Update GameManager score
 		context.scoreA = score[0]
@@ -356,3 +365,29 @@ func cleanup_ctf() -> void:
 
 func _exit_tree() -> void:
 	cleanup_ctf()
+
+## ===== REPLAY RECORDING HELPERS =====
+
+func _record_replay_flag_pickup(flag_team_id: int, carrier_id: String) -> void:
+	if get_tree().root.has_node("Replay"):
+		var replay := get_tree().root.get_node("Replay")
+		if replay != null and replay.has_method("record_flag_pickup"):
+			replay.call("record_flag_pickup", flag_team_id, carrier_id)
+
+func _record_replay_flag_drop(flag_team_id: int, pos: Vector2) -> void:
+	if get_tree().root.has_node("Replay"):
+		var replay := get_tree().root.get_node("Replay")
+		if replay != null and replay.has_method("record_flag_drop"):
+			replay.call("record_flag_drop", flag_team_id, pos)
+
+func _record_replay_flag_return(flag_team_id: int) -> void:
+	if get_tree().root.has_node("Replay"):
+		var replay := get_tree().root.get_node("Replay")
+		if replay != null and replay.has_method("record_flag_return"):
+			replay.call("record_flag_return", flag_team_id)
+
+func _record_replay_flag_capture(flag_team_id: int, capturer_id: String) -> void:
+	if get_tree().root.has_node("Replay"):
+		var replay := get_tree().root.get_node("Replay")
+		if replay != null and replay.has_method("record_flag_capture"):
+			replay.call("record_flag_capture", flag_team_id, capturer_id)

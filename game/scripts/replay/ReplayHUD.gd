@@ -143,9 +143,9 @@ func _setup_info_label() -> void:
 	info_label.add_theme_color_override("font_outline_color", Color.BLACK)
 
 func _update_display() -> void:
-	var minutes := int(_current_time) / 60
+	var minutes := int(_current_time / 60)
 	var seconds := int(_current_time) % 60
-	var total_min := int(_total_time) / 60
+	var total_min := int(_total_time / 60)
 	var total_sec := int(_total_time) % 60
 	var time_str := "%d:%02d / %d:%02d" % [minutes, seconds, total_min, total_sec]
 	
@@ -272,7 +272,7 @@ func _process(delta: float) -> void:
 func _on_round_started(round_num: int) -> void:
 	_show_announcement("[center][font_size=64]ROUND %d[/font_size][/center]" % round_num, 2.0)
 
-func _on_round_ended(winner: int, sa: int, sb: int) -> void:
+func _on_round_ended(winner: int, _sa: int, _sb: int) -> void:
 	var winner_text := "DRAW"
 	var winner_color := "#ffffff"
 	if winner == 0:

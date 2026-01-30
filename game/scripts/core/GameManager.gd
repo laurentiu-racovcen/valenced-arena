@@ -167,7 +167,7 @@ func _connect_agent_signals() -> void:
 	#on_agent_killed(agent, killer)
 # În GameManager.gd
 var _respawn_queues = {
-	0: [], # Echipa Albastră (TeamA)
+	0: [], # Echipa Albastră (TeamA) - stores {role: int, id: String}
 	1: []  # Echipa Roșie (TeamB)
 }
 
@@ -183,8 +183,9 @@ func _on_agent_died(agent: Agent, killer) -> void:
 	if agent.team and agent.team.name.contains("TeamB"):
 		team_id = 1
 		
-	# Salvăm rolul exact în coada echipei [cite: 38, 39]
-	_respawn_queues[team_id].push_back(agent.role)
+	# Salvăm rolul și ID-ul în coada echipei pentru respawn
+	var agent_id := str(agent.id) if agent.id != "" else str(agent.name)
+	_respawn_queues[team_id].push_back({"role": agent.role, "id": agent_id})
 	
 	
 	on_agent_killed(agent, killer)
@@ -200,24 +201,33 @@ func _on_respawn_timer_expired(team_id: int):
 	if round_over or match_over:
 		return
 	
-	# Extragem primul rol care a murit din coadă
+	# Extragem primul agent care a murit din coadă
 	if _respawn_queues[team_id].is_empty():
 		return
 		
-	var next_role = _respawn_queues[team_id].pop_front()
-	_perform_respawn(team_id, next_role)
+	var next_data = _respawn_queues[team_id].pop_front()
+	# Support both old format (just role int) and new format (dict with role and id)
+	var next_role: int
+	var original_id: String = ""
+	if next_data is Dictionary:
+		next_role = int(next_data.get("role", 0))
+		original_id = str(next_data.get("id", ""))
+	else:
+		next_role = int(next_data)
+	_perform_respawn(team_id, next_role, original_id)
 
-func _perform_respawn(team_id: int, role_to_apply: int):
+func _perform_respawn(team_id: int, role_to_apply: int, original_id: String = ""):
 	var agents_root := $"../AgentsRoot"
 	var teams_node := $"../Teams"
 	
 	var team = teams_node.get_node("TeamA") if team_id == 0 else teams_node.get_node("TeamB")
 	
-	# For CTF mode, always respawn with the original role
+	# For CTF and KOTH modes, always respawn with the original role
 	var actual_role := role_to_apply
 	
-	# Only check for missing roles in non-CTF modes (e.g., KOTH with promotions)
-	if not (mode is CtfMode):
+	# Only check for missing roles in Survival mode (for promotions)
+	# KOTH and CTF should preserve the same role on respawn
+	if not (mode is CtfMode) and not (mode is KothMode):
 		# Check what role is actually MISSING on the team (in case of promotion)
 		var existing_roles := {}
 		for m in team.members:
@@ -234,6 +244,10 @@ func _perform_respawn(team_id: int, role_to_apply: int):
 					break
 	
 	var agent = agent_scene.instantiate() as Agent
+	
+	# Preserve the original agent ID for replay consistency
+	if original_id != "":
+		agent.id = original_id
 	
 	# SETĂM ROLUL înainte de add_child
 	agent.role = actual_role
@@ -267,8 +281,9 @@ func _perform_respawn(team_id: int, role_to_apply: int):
 		agent.add_child(ctf_behavior)
 		agent.set_meta("ctf_behavior", ctf_behavior)
 	
-	# Record respawn for replay
+	# Record respawn for replay and rebind agent reference
 	_record_replay_agent_spawn(agent)
+	_rebind_replay_agent(agent)
 	
 	# Conectăm moartea pentru a continua ciclul [cite: 8]
 	if mode is KothMode or mode is CtfMode:
@@ -486,3 +501,10 @@ func _record_replay_agent_spawn(agent: Agent) -> void:
 	if replay != null and replay.has_method("record_agent_spawn"):
 		var agent_id := str(agent.id) if agent.id != "" else str(agent.name)
 		replay.call("record_agent_spawn", agent_id, agent.global_position)
+
+func _rebind_replay_agent(agent: Agent) -> void:
+	if not get_tree().root.has_node("Replay"):
+		return
+	var replay := get_tree().root.get_node("Replay")
+	if replay != null and replay.has_method("rebind_single_agent"):
+		replay.call("rebind_single_agent", agent)

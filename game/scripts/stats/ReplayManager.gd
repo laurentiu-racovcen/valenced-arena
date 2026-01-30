@@ -37,7 +37,6 @@ func _ready() -> void:
 	# Delete any old replay file - replays are session-only
 	if FileAccess.file_exists(LAST_REPLAY_PATH):
 		DirAccess.remove_absolute(LAST_REPLAY_PATH)
-		print("[Replay] Cleared old replay file (session-only mode)")
 
 ## ===== PUBLIC API =====
 
@@ -49,6 +48,10 @@ func is_playback_pending() -> bool:
 
 func is_recording() -> bool:
 	return _state == ReplayState.RECORDING
+
+func is_playing_replay() -> bool:
+	## Returns true if we're currently playing back a replay
+	return _state == ReplayState.PLAYBACK or _pending_playback
 
 func is_playing() -> bool:
 	return _state == ReplayState.PLAYBACK
@@ -78,8 +81,11 @@ func request_replay_last() -> void:
 	var mode_type: int = int(_data.get("mode", 0))
 	MatchConfig.game_mode = mode_type as Enums.GameMode
 	
-	print("[Replay] Loading replay: mode=%d, frames=%d, events=%d" % [
-		mode_type, _frames.size(), _events.size()
+	# Restore the selected map path (empty string means use default for mode)
+	MatchConfig.selected_map = str(_data.get("selected_map", ""))
+	
+	print("[Replay] Loading replay: mode=%d, map=%s, frames=%d, events=%d" % [
+		mode_type, MatchConfig.selected_map if MatchConfig.selected_map != "" else "default", _frames.size(), _events.size()
 	])
 	
 	# Use the new dedicated ReplayMatch scene
@@ -135,6 +141,7 @@ func begin_recording(agents: Array, mode_type: int) -> void:
 		"version": 2,  # New version with improved event system
 		"tick_rate": record_tick_rate,
 		"mode": mode_type,
+		"selected_map": MatchConfig.selected_map,  # Save map path for replay
 		"settings": {
 			"agent_fov_index": int(SettingsManager.get_agent_fov_index()),
 			"agent_los_index": int(SettingsManager.get_agent_los_index()),
@@ -160,6 +167,26 @@ func set_recording_agents(agents: Array) -> void:
 		return
 	# Keep existing _agent_ids, just rebind to new agent nodes
 	_rebind_agents(agents)
+
+func rebind_single_agent(agent) -> void:
+	## Call when a single agent respawns to update its reference in the recording.
+	if _state != ReplayState.RECORDING:
+		return
+	if agent == null:
+		return
+	
+	var aid: String = ""
+	if "id" in agent:
+		aid = str(agent.id)
+	if aid == "":
+		aid = str(agent.name)
+	
+	# Find the index for this agent ID and update the reference
+	_agents_by_id[aid] = agent
+	for i in range(_agent_ids.size()):
+		if _agent_ids[i] == aid:
+			_agents[i] = agent
+			break
 
 func end_recording(save: bool = true) -> void:
 	if _state != ReplayState.RECORDING:
@@ -246,6 +273,56 @@ func record_agent_spawn(agent_id: String, pos: Vector2) -> void:
 		"y": float(pos.y),
 	})
 
+## ===== CTF MODE EVENTS =====
+
+func record_flag_pickup(flag_team_id: int, carrier_id: String) -> void:
+	## Called when an agent picks up a flag.
+	if _state != ReplayState.RECORDING:
+		return
+	var t: float = _get_current_time()
+	_events.append({
+		"t": t,
+		"type": "flag_pickup",
+		"flag_team": flag_team_id,
+		"carrier": carrier_id,
+	})
+
+func record_flag_drop(flag_team_id: int, pos: Vector2) -> void:
+	## Called when a flag is dropped.
+	if _state != ReplayState.RECORDING:
+		return
+	var t: float = _get_current_time()
+	_events.append({
+		"t": t,
+		"type": "flag_drop",
+		"flag_team": flag_team_id,
+		"x": float(pos.x),
+		"y": float(pos.y),
+	})
+
+func record_flag_return(flag_team_id: int) -> void:
+	## Called when a flag returns to base.
+	if _state != ReplayState.RECORDING:
+		return
+	var t: float = _get_current_time()
+	_events.append({
+		"t": t,
+		"type": "flag_return",
+		"flag_team": flag_team_id,
+	})
+
+func record_flag_capture(flag_team_id: int, capturer_id: String) -> void:
+	## Called when a flag is captured (delivered to base).
+	if _state != ReplayState.RECORDING:
+		return
+	var t: float = _get_current_time()
+	_events.append({
+		"t": t,
+		"type": "flag_capture",
+		"flag_team": flag_team_id,
+		"capturer": capturer_id,
+	})
+
 ## ===== INTERNAL =====
 
 func _get_current_time() -> float:
@@ -253,6 +330,10 @@ func _get_current_time() -> float:
 
 func _process(delta: float) -> void:
 	if _state == ReplayState.RECORDING:
+		# Don't advance recording time or record frames while the game is paused
+		if get_tree().paused:
+			return
+			
 		_record_accum += delta
 		while _record_accum >= _record_dt:
 			_record_accum -= _record_dt
