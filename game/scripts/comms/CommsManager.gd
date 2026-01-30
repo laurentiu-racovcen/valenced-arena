@@ -137,7 +137,7 @@ func _check_distance(sender_id: String, target_id: String) -> Dictionary:
 	if not sender or not target:
 		return {"can_send": false, "reason": "agent_not_found"}
 	
-	if not sender.has("global_position") or not target.has("global_position"):
+	if not "global_position" in sender or not "global_position" in target:
 		return {"can_send": false, "reason": "no_position"}
 	
 	var distance = sender.global_position.distance_to(target.global_position)
@@ -180,7 +180,7 @@ func _check_ring_topology(sender_id: String, target_id: String) -> Dictionary:
 
 func _check_nearest_neighbors(sender_id: String, target_id: String) -> Dictionary:
 	var sender = registered_agents.get(sender_id)
-	if not sender or not sender.has("global_position"):
+	if not sender or not "global_position" in sender:
 		return {"can_send": false, "reason": "no_position"}
 	
 	var neighbors = _get_nearest_neighbors(sender_id, current_mode.neighbor_count)
@@ -192,7 +192,7 @@ func _check_nearest_neighbors(sender_id: String, target_id: String) -> Dictionar
 
 func _get_nearest_neighbors(agent_id: String, count: int) -> Array[String]:
 	var agent = registered_agents.get(agent_id)
-	if not agent or not agent.has("global_position"):
+	if not agent or not "global_position" in agent:
 		return []
 	
 	var distances: Array = []
@@ -202,7 +202,7 @@ func _get_nearest_neighbors(agent_id: String, count: int) -> Array[String]:
 			continue
 		
 		var other = registered_agents.get(other_id)
-		if not other or not other.has("global_position"):
+		if not other or not "global_position" in other:
 			continue
 		
 		var dist = agent.global_position.distance_to(other.global_position)
