@@ -105,6 +105,8 @@ layout_mode = 2
 layout_mode = 2
 mouse_filter = 2
 bbcode_enabled = true
+scroll_active = false
+vertical_alignment = 1
 
 [node name="Buttons" type="HBoxContainer" parent="Layout/VBox"]
 layout_mode = 2

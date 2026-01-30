@@ -1,12 +1,19 @@
 extends Control
 
 @onready var mode_display: TextureRect = $ModeDisplay
+@onready var start_button: TextureButton = $StartButton
 
 const MODE_TEXTURES := [
 	preload("res://assets/menu/normal/gamemode-select/button_survival.png"),
 	preload("res://assets/menu/normal/gamemode-select/button_koth.png"),
 	preload("res://assets/menu/normal/gamemode-select/button_ctf.png"),
 ]
+
+# Button textures for Next (Survival needs map selection) and Start (CTF/KOTH start directly)
+const NEXT_NORMAL := preload("res://assets/menu/normal/gamemode-select/button_next.png")
+const NEXT_HOVER := preload("res://assets/menu/hover/gamemode-select/button_next.png")
+const START_NORMAL := preload("res://assets/menu/normal/map-select/button_start.png")
+const START_HOVER := preload("res://assets/menu/hover/map-select/button_start.png")
 
 var current_mode_index: int = 0
 
@@ -35,3 +42,11 @@ func _on_left_arrow_pressed() -> void:
 
 func _update_modes() -> void:
 	mode_display.texture = MODE_TEXTURES[current_mode_index]
+	
+	# Update button texture: Next for Survival (needs map select), Start for CTF/KOTH
+	if current_mode_index == Enums.GameMode.SURVIVAL:
+		start_button.texture_normal = NEXT_NORMAL
+		start_button.texture_hover = NEXT_HOVER
+	else:
+		start_button.texture_normal = START_NORMAL
+		start_button.texture_hover = START_HOVER
